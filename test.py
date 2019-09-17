@@ -36,7 +36,8 @@ class CommitsSpider():
     #     # self.current_timestamp = 0
     def start_requests(self,url):
         cookies=self.up_cookies()
-        print(self.s.cookies)
+        print(cookies)
+        #print(self.s.cookies)
         # self.s.cookies=requests.utils.cookiejar_from_dict(cookies)
         response=self.s.get(url)
         # #print(response.text)
@@ -55,9 +56,15 @@ class CommitsSpider():
         if not self.is_valid_cookie(cookies):
             print(44444444444444444444444444444444444444444444444444444444444444423)
             cookies = self.login(cook, username, password)
+            if not self.is_valid_cookie(cookies):
+                cook = self.getcookies()
+                username = cook.username
+                # print(username)
+                password = cook.password
+                cookies = self.login(cook, username, password)
         # cookies = self.login()
         # TODO 将新获取的cookies存库
-        self.update_params()
+        #self.update_params()
         return cookies
         # self.sign_if_needed(cookies)
 
@@ -74,62 +81,69 @@ class CommitsSpider():
         self.detail(html,mid)
 
     def detail(self, html,mid):
-        datas = html["data"]["data"]
-        print(datas)
-        if datas and int(datas[0]["like_count"]) < 1:
+        print(html)
+        if html["ok"] == 0:
+            print("wuwuuw")
             return
-        for i in datas:
-            item = {}
-            # 详情页唯一标示
-            item["mid"] = mid
-            # 评论唯一标示
-            item["bid"] = i.get("bid")
-            # item["floor_number"]=i.get("floor_number")
-            # 赞
-            item["like_count"] = int(i.get("like_count"))
-            if item["like_count"] < 1:
-                continue
+        datas = html["data"]["data"]
+        if datas and int(datas[0]["like_count"]) < 1:
+            print("没有数据了")
 
-            # 评论内容
-            text = i.get("text")
-            item["text"] = re.sub("<.*?>", "", text)
-            if not item["text"]:
-                continue
-            # 评论时间
-            creates_at = i.get("created_at")
-            if "+0800" in creates_at:
-                item["created_at"] = int(self.trans_format(creates_at))
-            else:
-                item["created_at"] = creates_at
-            # pic=i.get("pic")
-            # if pic:
-            #     images_list=[]
-            #     try:
-            #         image_item={}
-            #         image_item["url"]=pic["large"]["url"]
-            #         image_item["width"]=pic["large"]["geo"]["width"]
-            #         image_item["height"] = pic["large"]["geo"]["height"]
-            #         images_list.append(image_item)
-            #     except:
-            #         print("链接为------------------------------------------------")
-            #         print(pic)
-            # else:
-            #     images_list=[]
-            # item["media"]=images_list
-            # 评论者id
-            item["user_id"] = i["user"]["id"]
-            # 评论人昵称
-            item["screen_name"] = i["user"]["screen_name"]
-            # 评论人头像
-            item["profile_image_url"] = i["user"]["profile_image_url"]
+        else:
+            for i in datas:
+                print(88888888888888888888888888)
+                item = {}
+                # 详情页唯一标示
+                item["mid"] = mid
+                # 评论唯一标示
+                item["bid"] = i.get("bid")
+                # item["floor_number"]=i.get("floor_number")
+                # 赞
+                item["like_count"] = int(i.get("like_count"))
+                if item["like_count"] < 1:
+                    continue
 
-            print(item)
-        max_id = html["data"]["max_id"]
-        print(max_id)
-        if max_id:
-            commit_url = self.commit_url.format(mid, mid, "max_id=" + str(max_id) + "&")
-            html=self.s.get(commit_url).json()
-            self.detail(html,mid)
+                # 评论内容
+                text = i.get("text")
+                item["text"] = re.sub("<.*?>", "", text)
+                if not item["text"]:
+                    continue
+                # 评论时间
+                creates_at = i.get("created_at")
+                if "+0800" in creates_at:
+                    item["created_at"] = int(self.trans_format(creates_at))
+                else:
+                    item["created_at"] = creates_at
+                # pic=i.get("pic")
+                # if pic:
+                #     images_list=[]
+                #     try:
+                #         image_item={}
+                #         image_item["url"]=pic["large"]["url"]
+                #         image_item["width"]=pic["large"]["geo"]["width"]
+                #         image_item["height"] = pic["large"]["geo"]["height"]
+                #         images_list.append(image_item)
+                #     except:
+                #         print("链接为------------------------------------------------")
+                #         print(pic)
+                # else:
+                #     images_list=[]
+                # item["media"]=images_list
+                # 评论者id
+                item["user_id"] = i["user"]["id"]
+                # 评论人昵称
+                item["screen_name"] = i["user"]["screen_name"]
+                # 评论人头像
+                item["profile_image_url"] = i["user"]["profile_image_url"]
+
+                print(item)
+            max_id = html["data"]["max_id"]
+            print(max_id)
+            if max_id:
+                commit_url = self.commit_url.format(mid, mid, "max_id=" + str(max_id) + "&")
+                html=self.s.get(commit_url).json()
+                print(999999999999999999999999999999999999)
+                self.detail(html,mid)
 
     def trans_format(self, time_string, from_format="%a %b %d %H:%M:%S +0800 %Y"):
         """
@@ -225,11 +239,12 @@ class CommitsSpider():
     def login(self, cook, username, password):
         options = webdriver.ChromeOptions()
         #options.add_argument('--headless')
+        #driver = webdriver.Chrome(executable_path=r"C:\Temp\phantomjs-2.1.1-windows\chromedriver.exe",chrome_options=options)
         driver = webdriver.Chrome(executable_path=r"C:\Temp\phantomjs-2.1.1-windows\chromedriver.exe")
         driver.get('https://passport.weibo.cn/signin/login')
-        time.sleep(5)
+        time.sleep(3)
         WebDriverWait(driver, 10, 2).until(lambda driver: driver.find_element_by_xpath('//*[@id="loginAction"]'))
-        time.sleep(5)
+        time.sleep(3)
         # Input username and password
         username_area = driver.find_element_by_xpath('//*[@id="loginName"]')
         username_area.send_keys(username)
@@ -242,7 +257,7 @@ class CommitsSpider():
         btn.click()
 
         from time import sleep
-        sleep(1)
+        sleep(5)
         # if their is a CAPTCHA, then crack it.
         if 'CAPTCHA' in driver.current_url:
             print('need crack')
@@ -251,14 +266,19 @@ class CommitsSpider():
         else:
             cookies = driver.get_cookies()
         cookies_dict = {}
+        print("-------------------------------------")
         for d in cookies:
             cookies_dict[d['name']] = d['value']
-        self.s.cookies=requests.utils.cookiejar_from_dict(cookies)
         cook.cookies = json.dumps(cookies_dict)
+        print(555555555555555555555555)
         dt = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        print(7777777777777777777777777)
         cook.create_time = dt
         session.add(cook)
+        print(88888888888888888888888888888)
+        #driver.close()
         try:
+            print(11111111111111111111111)
             session.commit()
         except:
             print("数据库更新cookies失败")
@@ -270,5 +290,5 @@ if __name__=="__main__":
     import sys
     # url=sys.argv[1]
     # print(url)
-    url="https://m.weibo.cn/detail/4413161250214670"
+    url="https://m.weibo.cn/detail/4415278761113511"
     com.start_requests(url)
