@@ -8,6 +8,7 @@ import time
 import datetime
 import requests
 from selenium import webdriver
+from pyvirtualdisplay import Display
 from selenium.webdriver.support.wait import WebDriverWait
 from db import session
 from model import Cookies
@@ -32,16 +33,15 @@ class CommitsSpider():
         self.s.headers={
             "user-agent": "Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/65.0.3325.181 Safari/537.36"
         }
-
-    #     # self.current_timestamp = 0
-    def start_requests(self,url):
-        cookies=self.up_cookies()
-        print(cookies)
-        #print(self.s.cookies)
-        # self.s.cookies=requests.utils.cookiejar_from_dict(cookies)
-        response=self.s.get(url)
-        # #print(response.text)
-        self.parse(response)
+   #     # self.current_timestamp = 0
+    def starts(self,urls):
+        for url in urls:
+            self.up_cookies()
+            #print(self.s.cookies)
+            # self.s.cookies=requests.utils.cookiejar_from_dict(cookies)
+            response=self.s.get(url)
+            # #print(response.text)
+            self.parse(response)
     def up_cookies(self):
 
         cook = self.getcookies()
@@ -81,14 +81,13 @@ class CommitsSpider():
         self.detail(html,mid)
 
     def detail(self, html,mid):
-        print(html)
         if html["ok"] == 0:
             print("wuwuuw")
             return
         datas = html["data"]["data"]
         if datas and int(datas[0]["like_count"]) < 1:
             print("没有数据了")
-
+            return
         else:
             for i in datas:
                 print(88888888888888888888888888)
@@ -202,6 +201,7 @@ class CommitsSpider():
 
     def is_valid_cookie(self, cookie):
         self.s.cookies = requests.utils.cookiejar_from_dict(cookie)
+        print(self.s.cookies)
         #self.s.cookies=cookie
         self.s.verify = False
         st = self.get_st()
@@ -237,52 +237,56 @@ class CommitsSpider():
         #
 
     def login(self, cook, username, password):
-        options = webdriver.ChromeOptions()
-        options.add_argument('--headless')
-        driver = webdriver.Chrome(chrome_options=options)
-        #driver = webdriver.Chrome(executable_path=r"C:\Temp\phantomjs-2.1.1-windows\chromedriver.exe")
-        driver.get('https://passport.weibo.cn/signin/login')
+        display = Display(visible=0, size=(800, 600))
+        display.start()
+        self.driver = webdriver.Firefox()
+        # options = webdriver.ChromeOptions()
+        # options.add_argument('--headless')
+        # # self.driver = webdriver.Chrome(chrome_options=options)
+        # self.driver = webdriver.Chrome(executable_path=r"C:\Temp\phantomjs-2.1.1-windows\chromedriver.exe",
+        #                                chrome_options=options)
+
+        self.driver.get('https://passport.weibo.cn/signin/login')
         time.sleep(3)
-        WebDriverWait(driver, 10, 2).until(lambda driver: driver.find_element_by_xpath('//*[@id="loginAction"]'))
+        WebDriverWait(self.driver, 10, 2).until(lambda driver: driver.find_element_by_xpath('//*[@id="loginAction"]'))
         time.sleep(3)
         # Input username and password
-        username_area = driver.find_element_by_xpath('//*[@id="loginName"]')
+        username_area = self.driver.find_element_by_xpath('//*[@id="loginName"]')
         username_area.send_keys(username)
         time.sleep(3)
-        psw_area = driver.find_element_by_xpath('//*[@id="loginPassword"]')
+        psw_area = self.driver.find_element_by_xpath('//*[@id="loginPassword"]')
         psw_area.send_keys(password)
 
         # Submit
-        btn = driver.find_element_by_xpath('//*[@id="loginAction"]')
+        btn = self.driver.find_element_by_xpath('//*[@id="loginAction"]')
         btn.click()
 
         from time import sleep
         sleep(5)
         # if their is a CAPTCHA, then crack it.
-        if 'CAPTCHA' in driver.current_url:
+        if 'CAPTCHA' in self.driver.current_url:
             print('need crack')
             # TODO 处理验证码 如果处理失败标注对应数据库内是否可用字段值为不可用
             # cookies = crack(driver)
         else:
-            cookies = driver.get_cookies()
+            cookies = self.driver.get_cookies()
         cookies_dict = {}
         print("-------------------------------------")
         for d in cookies:
             cookies_dict[d['name']] = d['value']
         cook.cookies = json.dumps(cookies_dict)
-        print(555555555555555555555555)
         dt = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        print(7777777777777777777777777)
         cook.create_time = dt
         session.add(cook)
-        print(88888888888888888888888888888)
         #driver.close()
         try:
-            print(11111111111111111111111)
             session.commit()
+
         except:
             print("数据库更新cookies失败")
             session.rollback()
+        self.driver.quit()
+        display.stop()
         return cookies_dict
 
 if __name__=="__main__":
@@ -290,5 +294,6 @@ if __name__=="__main__":
     import sys
     # url=sys.argv[1]
     # print(url)
-    url="https://m.weibo.cn/detail/4415278761113511"
-    com.start_requests(url)
+    url=["https://m.weibo.cn/detail/4415278761113511","https://m.weibo.cn/detail/4417517919358849","https://m.weibo.cn/detail/4417456162226699"]
+    com.starts(url)
+
