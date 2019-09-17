@@ -238,9 +238,9 @@ class CommitsSpider():
 
     def login(self, cook, username, password):
         options = webdriver.ChromeOptions()
-        #options.add_argument('--headless')
-        #driver = webdriver.Chrome(executable_path=r"C:\Temp\phantomjs-2.1.1-windows\chromedriver.exe",chrome_options=options)
-        driver = webdriver.Chrome(executable_path=r"C:\Temp\phantomjs-2.1.1-windows\chromedriver.exe")
+        options.add_argument('--headless')
+        driver = webdriver.Chrome(chrome_options=options)
+        #driver = webdriver.Chrome(executable_path=r"C:\Temp\phantomjs-2.1.1-windows\chromedriver.exe")
         driver.get('https://passport.weibo.cn/signin/login')
         time.sleep(3)
         WebDriverWait(driver, 10, 2).until(lambda driver: driver.find_element_by_xpath('//*[@id="loginAction"]'))
