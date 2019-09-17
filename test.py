@@ -4,6 +4,7 @@ import json
 import os
 import random
 import re
+import sys
 import time
 import datetime
 import requests
@@ -11,7 +12,7 @@ from selenium import webdriver
 from pyvirtualdisplay import Display
 from selenium.webdriver.support.wait import WebDriverWait
 from db import session
-from model import Cookies
+from model import Cookies,Commit
 
 
 class CommitsSpider():
@@ -34,14 +35,23 @@ class CommitsSpider():
             "user-agent": "Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/65.0.3325.181 Safari/537.36"
         }
    #     # self.current_timestamp = 0
+    def get_bid(self,mid):
+        all_models=session.query(Commit).filter(Commit.mid==mid).all()
+        all_models_list=[]
+        if all_models:
+            all_models_list=[i.bid for i in all_models]
+        return all_models_list
     def starts(self,urls):
-        for url in urls:
-            self.up_cookies()
-            #print(self.s.cookies)
-            # self.s.cookies=requests.utils.cookiejar_from_dict(cookies)
-            response=self.s.get(url)
-            # #print(response.text)
-            self.parse(response)
+        if not urls:
+            return
+        # for url in urls:
+        self.up_cookies()
+        #print(self.s.cookies)
+        # self.s.cookies=requests.utils.cookiejar_from_dict(cookies)
+        response=self.s.get(url)
+        # #print(response.text)
+
+        self.parse(response)
     def up_cookies(self):
 
         cook = self.getcookies()
@@ -54,7 +64,7 @@ class CommitsSpider():
         # self.driver = webdriver.Chrome()
         cookies = self.get_cookie_from_db(cook)
         if not self.is_valid_cookie(cookies):
-            print(44444444444444444444444444444444444444444444444444444444444444423)
+            print("正在登陆")
             cookies = self.login(cook, username, password)
             if not self.is_valid_cookie(cookies):
                 cook = self.getcookies()
@@ -71,18 +81,17 @@ class CommitsSpider():
     def parse(self, response):
         url = response.url
         mid = url.split("/")[-1]
-        print(mid)
+        bid_lists = self.get_bid(mid)
         # if "max_id" in url:
         #     commit_url = self.commit_url.format(mid, mid, max_id)
         #     yield scrapy.Request(url=commit_url, callback=self.detail)
         # else:
         commit_url = self.commit_url.format(mid, mid, "")
         html=self.s.get(commit_url).json()
-        self.detail(html,mid)
+        self.detail(html,mid,bid_lists)
 
-    def detail(self, html,mid):
+    def detail(self, html,mid,bid_lists):
         if html["ok"] == 0:
-            print("wuwuuw")
             return
         datas = html["data"]["data"]
         if datas and int(datas[0]["like_count"]) < 1:
@@ -90,12 +99,15 @@ class CommitsSpider():
             return
         else:
             for i in datas:
-                print(88888888888888888888888888)
                 item = {}
                 # 详情页唯一标示
                 item["mid"] = mid
+                item["detail_url"]="https://m.weibo.cn/detail/"+str(mid)
                 # 评论唯一标示
                 item["bid"] = i.get("bid")
+                if item["bid"] in bid_lists:
+                    print("数据已存在")
+                    continue
                 # item["floor_number"]=i.get("floor_number")
                 # 赞
                 item["like_count"] = int(i.get("like_count"))
@@ -110,9 +122,10 @@ class CommitsSpider():
                 # 评论时间
                 creates_at = i.get("created_at")
                 if "+0800" in creates_at:
-                    item["created_at"] = int(self.trans_format(creates_at))
+                    item["created_at"] = self.trans_format(creates_at)
                 else:
                     item["created_at"] = creates_at
+
                 # pic=i.get("pic")
                 # if pic:
                 #     images_list=[]
@@ -134,15 +147,38 @@ class CommitsSpider():
                 item["screen_name"] = i["user"]["screen_name"]
                 # 评论人头像
                 item["profile_image_url"] = i["user"]["profile_image_url"]
-
                 print(item)
+                self.save_model(item)
             max_id = html["data"]["max_id"]
-            print(max_id)
             if max_id:
                 commit_url = self.commit_url.format(mid, mid, "max_id=" + str(max_id) + "&")
                 html=self.s.get(commit_url).json()
-                print(999999999999999999999999999999999999)
-                self.detail(html,mid)
+                self.detail(html,mid,bid_lists)
+    def save_model(self,item):
+
+        commit_models=session.query(Commit).filter(Commit.bid==item.get("bid")).all()
+        if commit_models:
+            commit_model=commit_models[0]
+        else:
+            commit_model=Commit()
+        commit_model.mid=int(item.get("mid"))
+        commit_model.detail_url=item.get("detail_url")
+        commit_model.bid = item.get("bid")
+        commit_model.like_count = int(item.get("like_count"))
+        commit_model.created_at = item.get("created_at")
+        commit_model.text = item.get("text")
+        commit_model.user_id = int(item.get("user_id"))
+        commit_model.screen_name = item.get("screen_name")
+        commit_model.profile_image_url = item.get("profile_image_url")
+        session.add(commit_model)
+        try:
+            session.commit()
+            print("插入数据成功")
+        except Exception as e:
+            print(e)
+            print("插入数据失败")
+            session.rollback()
+
 
     def trans_format(self, time_string, from_format="%a %b %d %H:%M:%S +0800 %Y"):
         """
@@ -153,9 +189,9 @@ class CommitsSpider():
         :return:
         """
         time_struct = time.strptime(time_string, from_format)
-        times = int(time.mktime(time_struct))
+        #times = int(time.mktime(time_struct))
         # times = time.strftime(to_format, time_struct)
-        return times
+        return time_struct
 
     def getcookies(self):
         cooks = session.query(Cookies).all()
@@ -201,7 +237,6 @@ class CommitsSpider():
 
     def is_valid_cookie(self, cookie):
         self.s.cookies = requests.utils.cookiejar_from_dict(cookie)
-        print(self.s.cookies)
         #self.s.cookies=cookie
         self.s.verify = False
         st = self.get_st()
@@ -271,7 +306,6 @@ class CommitsSpider():
         else:
             cookies = self.driver.get_cookies()
         cookies_dict = {}
-        print("-------------------------------------")
         for d in cookies:
             cookies_dict[d['name']] = d['value']
         cook.cookies = json.dumps(cookies_dict)
@@ -291,9 +325,9 @@ class CommitsSpider():
 
 if __name__=="__main__":
     com=CommitsSpider()
-    import sys
-    # url=sys.argv[1]
+    print(sys.argv)
+    url=sys.argv[1]
     # print(url)
-    url=["https://m.weibo.cn/detail/4415278761113511","https://m.weibo.cn/detail/4417517919358849","https://m.weibo.cn/detail/4417456162226699"]
+    #url="https://m.weibo.cn/detail/4415278761113511"
     com.starts(url)
 
