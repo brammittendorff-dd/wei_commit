@@ -105,6 +105,7 @@ class CommitsSpider():
                 item["detail_url"]="https://m.weibo.cn/detail/"+str(mid)
                 # 评论唯一标示
                 item["bid"] = i.get("bid")
+                #TODO 确定跟新方法，每次抓取更新还是只更新新发
                 if item["bid"] in bid_lists:
                     print("数据已存在")
                     continue
@@ -272,14 +273,14 @@ class CommitsSpider():
         #
 
     def login(self, cook, username, password):
-        display = Display(visible=0, size=(800, 600))
-        display.start()
-        self.driver = webdriver.Firefox()
-        # options = webdriver.ChromeOptions()
-        # options.add_argument('--headless')
-        # # self.driver = webdriver.Chrome(chrome_options=options)
-        # self.driver = webdriver.Chrome(executable_path=r"C:\Temp\phantomjs-2.1.1-windows\chromedriver.exe",
-        #                                chrome_options=options)
+        # display = Display(visible=0, size=(800, 600))
+        # display.start()
+        # self.driver = webdriver.Firefox()
+        options = webdriver.ChromeOptions()
+        options.add_argument('--headless')
+        # self.driver = webdriver.Chrome(chrome_options=options)
+        self.driver = webdriver.Chrome(executable_path=r"C:\Temp\phantomjs-2.1.1-windows\chromedriver.exe",
+                                       chrome_options=options)
 
         self.driver.get('https://passport.weibo.cn/signin/login')
         time.sleep(3)
@@ -319,8 +320,8 @@ class CommitsSpider():
         except:
             print("数据库更新cookies失败")
             session.rollback()
-        self.driver.quit()
-        display.stop()
+        # self.driver.quit()
+        # display.stop()
         return cookies_dict
 
 if __name__=="__main__":
