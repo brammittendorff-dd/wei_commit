@@ -4,7 +4,7 @@ from sqlalchemy.dialects.mysql import INTEGER, MEDIUMTEXT, TINYINT,LONGTEXT,DATE
 from sqlalchemy.orm import relationship
 from sqlalchemy.ext.declarative import declarative_base
 from datetime import datetime
-from db import engine
+#from db import engine
 #import datetime
 Base = declarative_base()
 metadata = Base.metadata
