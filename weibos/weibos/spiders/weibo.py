@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+import sys
+sys.path.append('/home/commit/wei_commit/weibos')
 import scrapy
 import redis
 import re

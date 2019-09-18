@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
 import sys
-#sys.path.append('/home/xiangmu/bitexiangmu/hanyu')
+#sys.path.append('/home/commit/wei_commit/weibos')
 from database.db import session
 from database.models import Keyword, Topic, Dynamic, TempUser, DynamicUser, RepostDynamic,\
     Media, RepostMedia, Source, DynamicTopic, SourceTopic, AccessToken
