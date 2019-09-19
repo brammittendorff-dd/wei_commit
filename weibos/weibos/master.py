@@ -1,5 +1,5 @@
 import sys
-# sys.path.append('/home/xiangmu/bitexiangmu/hanyu')
+sys.path.append('/home/commit/wei_commit/weibos')
 import redis
 from urllib import parse
 import time
