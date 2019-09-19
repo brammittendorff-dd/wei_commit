@@ -25,8 +25,8 @@ class Master():
 
     def weibo_test_redis(self):
 
-        weiboid = parse.quote("邓超")
-        weibo_burl = self.CELEBRITY_NEWS_API_URL.format(str(5187664653), weiboid,str(5187664653), "1076035187664653", "")
+        weiboid = parse.quote("杨幂")
+        weibo_burl = self.CELEBRITY_NEWS_API_URL.format(str(1195242865), weiboid,str(1195242865), "1076031195242865", "")
         self.r.rpush("weibo:start_urls", weibo_burl)
 
 ms = Master()

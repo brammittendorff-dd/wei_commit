@@ -25,12 +25,13 @@ class WeiboSpider(RedisSpider):
     #start_urls = ['https://m.weibo.cn/']
     redis_key = 'weibo:start_urls'
     CELEBRITY_NEWS_API_URL = 'https://m.weibo.cn/api/container/getIndex?uid={}&luicode=10000011&lfid=100103type%3D1%26q%3D{}&type=uid&value={}&containerid={}&page={}'
+                            #'https://m.weibo.cn/api/container/getIndex?uid={}&luicode=10000011&lfid=100103type%3D1%26q%3D{}&type=uid&value={}&containerid={}&page={}
     # CELEBRITY_NEWS_API_URL = 'https://m.weibo.cn/api/container/getIndex?uid=' + str(
     #     model.weibo_additional_id) + '&luicode=10000011&lfid=100103type%3D1%26q%3D' + weiboid + '&type=uid&value=' + str(
     #     model.weibo_additional_id) + '&containerid=' + model.container_id
     custom_settings = {
-        "CONCURRENT_REQUESTS": 1,
-        "DOWNLOAD_DELAY": 10,
+        "CONCURRENT_REQUESTS": 5,
+        "DOWNLOAD_DELAY": 1,
         'DEFAULT_REQUEST_HEADERS': {
             "User-Agent": "Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.132 Safari/537.36"
         },
@@ -73,11 +74,13 @@ class WeiboSpider(RedisSpider):
             return
         url=res.decode()
 
-        cookies=self.up_cookies()
 
-        yield scrapy.Request(url=url,callback=self.parse,headers=self.headers,dont_filter=True,cookies=cookies)
+
+        yield scrapy.Request(url=url,callback=self.parse,headers=self.headers,dont_filter=True)
 
     def parse(self, response):
+        cookies = self.up_cookies()
+        print(response.meta)
         meta = response.meta
         #匹配containerid
         con_id=re.search('containerid=(.*?)&',response.url).group(1)
@@ -167,55 +170,71 @@ class WeiboSpider(RedisSpider):
 
     def parse_status(self, mblog, model=None):
         item={}
-        mid=mblog.get('mid')
-        item["weibo_url"]="https://m.weibo.cn/detail/"+str(mid)
-        if item["weibo_url"] in model["urls"]:
-            print(5555555555555555)
+        try:
+            mid=mblog.get('mid')
+            item["weibo_url"]="https://m.weibo.cn/detail/"+str(mid)
+            if item["weibo_url"] in model["urls"]:
+                print(5555555555555555)
+                return
+            item["release_time"] = self.generate_timestamp(mblog)
+            #print(item["release_time"],model["model"].last_weibo_timestamp)
+            # if int(item["release_time"]) < model["model"].last_weibo_timestamp:
+            #     return
+            #时间戳判断爬去
+            # if int(item["release_time"]) < 1564773839:
+            #     print(66666666666)
+            #     return
+            #self.update(model["model"],item)
+            item["weibo_id"] = mblog.get('user').get('id')
+            item["nick_name"] = mblog.get('user').get('screen_name')
+            avatar_url = mblog.get('user').get('profile_image_url')
+            # target_path=os.path.join(os.getcwd()+"/weibo",str(model["model"].id))
+            # if not os.path.isdir(target_path):
+            #     os.mkdir(target_path)
+            # avatar_url = upload_weibo_media(avatar_url,target_path)
+            item["avatar_url"] = avatar_url
+            #os.remove(avatar_url[0].replace("\\", "/"))
+            item["tw_or_ins"] = 3
+            item["author_id_rl"] = model["model"].id
+            # model.mid = mblog.get('mid')
+            text = mblog.get('text')
+            str_first = re.sub('<.*?>', "", text)
+            item["data_en"] = str_first
+            item["type"]=json.dumps(["hanyu"])
+            # model["data_ch"] = ""
+            # model["data_en"]=""
+            models = self.replace_media_url(model["model"],mblog)
+            item["media_id"] = models
+            item["is_repost"] = False
+            #print(item)
+            # print(model)
+            return item
+        except:
             return
-        item["release_time"] = self.generate_timestamp(mblog)
-        #print(item["release_time"],model["model"].last_weibo_timestamp)
-        # if int(item["release_time"]) < model["model"].last_weibo_timestamp:
-        #     return
-        #时间戳判断爬去
-        # if int(item["release_time"]) < 1564773839:
-        #     print(66666666666)
-        #     return
-        #self.update(model["model"],item)
-        item["weibo_id"] = mblog.get('user').get('id')
-        item["nick_name"] = mblog.get('user').get('screen_name')
-        avatar_url = mblog.get('user').get('profile_image_url')
-        # target_path=os.path.join(os.getcwd()+"/weibo",str(model["model"].id))
-        # if not os.path.isdir(target_path):
-        #     os.mkdir(target_path)
-        # avatar_url = upload_weibo_media(avatar_url,target_path)
-        item["avatar_url"] = avatar_url
-        #os.remove(avatar_url[0].replace("\\", "/"))
-        item["tw_or_ins"] = 3
-        item["author_id_rl"] = model["model"].id
-        # model.mid = mblog.get('mid')
-        text = mblog.get('text')
-        str_first = re.sub('<.*?>', "", text)
-        item["data_en"] = str_first
-        item["type"]=json.dumps(["hanyu"])
-        # model["data_ch"] = ""
-        # model["data_en"]=""
-        models = self.replace_media_url(model["model"],mblog)
-        item["media_id"] = models
-        item["is_repost"] = False
-        #print(item)
-        # print(model)
-        return item
 
     def generate_timestamp(self, mblog):
-        burl = "https://m.weibo.cn/status/{}".format(mblog.get('bid'))
+        #burl = "https://m.weibo.cn/status/{}".format(mblog.get('mid'))
+
 
         created_at = mblog.get('created_at')
         print(created_at)
         if not created_at:
             return int(time.time())
         if "+0800" not in created_at:
-            res = self.s.get(burl).text
-            created_at = re.search('"created_at": "(.*?)"', res).group(1)
+            burl = "https://m.weibo.cn/detail/{}".format(mblog.get('mid'))
+            try:
+                res = self.s.get(burl).text
+                created_at = re.search('"created_at": "(.*?)"', res).group(1)
+            except:
+                time.sleep(2)
+                try:
+                    res = self.s.get(burl).text
+                    created_at = re.search('"created_at": "(.*?)"', res).group(1)
+                except:
+                    print(burl)
+                    print("ip被封了。。。。。。。。。")
+                    created_at=int(time.time())
+                    return created_at
         # print(created_at)
         if len(created_at.split(' ')) > 5:
             date = datetime.datetime.strptime(created_at, '%a %b %d %H:%M:%S %z %Y')
@@ -394,6 +413,7 @@ class WeiboSpider(RedisSpider):
             st = st.split('\'')[1]
         except:
             return None
+        print(st)
         return st
 
     def get_cookie_from_db(self, cook):
