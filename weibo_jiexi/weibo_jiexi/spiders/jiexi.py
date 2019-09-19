@@ -59,7 +59,7 @@ class JiexiSpider(RedisSpider):
         url=data["avatar_url"]
         meta={}
         meta["item"]=data
-        return scrapy.Request(url=url,callback=self.parse,meta=meta)
+        return scrapy.Request(url=url,callback=self.parse,meta=meta,dont_filter=True)
     def parse(self, response):
 
         data=response.meta["item"]

@@ -23,9 +23,14 @@ class Master():
                                                                 str(model.weibo_additional_id), model.container_id, "")
                 self.r.rpush("weibo:start_urls", weibo_burl)
 
+    def weibo_test_redis(self):
 
+        weiboid = parse.quote("邓超")
+        weibo_burl = self.CELEBRITY_NEWS_API_URL.format(str(5187664653), weiboid,str(5187664653), "1076035187664653", "")
+        self.r.rpush("weibo:start_urls", weibo_burl)
 
 ms = Master()
-ms.weibo_redis()
+#ms.weibo_redis()
+ms.weibo_test_redis()
 
 

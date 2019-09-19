@@ -61,6 +61,10 @@ class WeiboSpider(RedisSpider):
         self.r = redis.Redis(host="47.110.95.150", port=6379,password="Bitgraph818")
         self.s = requests.session()
         self.s.verify=False
+        self.headers={
+            "User-Agent": "Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.132 Safari/537.36"
+
+        }
         self.BASE_URL = "https://m.weibo.cn"
     #从redis拿取链接抓取
     def start_requests(self):
@@ -68,13 +72,10 @@ class WeiboSpider(RedisSpider):
         if not res:
             return
         url=res.decode()
-        headers={
-            "User-Agent": "Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.132 Safari/537.36"
 
-        }
         cookies=self.up_cookies()
 
-        yield scrapy.Request(url=url,callback=self.parse,headers=headers,dont_filter=True,cookies=cookies)
+        yield scrapy.Request(url=url,callback=self.parse,headers=self.headers,dont_filter=True,cookies=cookies)
 
     def parse(self, response):
         meta = response.meta
@@ -134,12 +135,12 @@ class WeiboSpider(RedisSpider):
             print(res['data']['cardlistInfo'])
             page = res['data']['cardlistInfo']['page']
             print(page)
-            if page and page<5:
+            if page and page<11:
                 weiboid = parse.quote(model.weibo_id)
                 #meta = {"model": model}
                 url = self.CELEBRITY_NEWS_API_URL.format(str(model.weibo_additional_id), weiboid,
                                                          str(model.weibo_additional_id), model.container_id, str(page))
-                yield scrapy.Request(url=url, meta=meta, callback=self.parse
+                yield scrapy.Request(url=url, meta=meta, headers=self.headers,callback=self.parse,dont_filter=True
                                      )
         except:
             print("数据已抓取完")
