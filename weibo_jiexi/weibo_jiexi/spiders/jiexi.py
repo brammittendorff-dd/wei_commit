@@ -22,7 +22,7 @@ class JiexiSpider(RedisSpider):
     #     model.weibo_additional_id) + '&luicode=10000011&lfid=100103type%3D1%26q%3D' + weiboid + '&type=uid&value=' + str(
     #     model.weibo_additional_id) + '&containerid=' + model.container_id
     custom_settings = {
-        "CONCURRENT_REQUESTS": 10,
+        "CONCURRENT_REQUESTS": 1,
         "DOWNLOAD_DELAY": 1,
     #     'DEFAULT_REQUEST_HEADERS': {
     #         "User-Agent": "Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.132 Safari/537.36"
@@ -55,26 +55,32 @@ class JiexiSpider(RedisSpider):
 
     def make_request_from_data(self, data):
         data=json.loads(data.decode())
-        print(data)
-        url=data["avatar_url"]
+        url="https://www.baidu.com/"
         meta={}
         meta["item"]=data
         return scrapy.Request(url=url,callback=self.parse,meta=meta,dont_filter=True)
     def parse(self, response):
 
         data=response.meta["item"]
+        print(data)
         item=self.to_item(data)
         yield item
     def to_item(self,data):
         item=WeiboJiexiItem()
-        item['avatar_url']=data.get('avatar_url')
-        item['release_time'] = data.get('release_time')
-        item['weibo_id'] = data.get('weibo_id')
-        item['tw_or_ins'] = data.get('tw_or_ins')
-        item['nick_name'] = data.get('nick_name')
-        item['author_id_rl'] = data['author_id_rl']
-        item['data_en'] = data.get('data_en')
-        item['media_id'] = data.get("media_id")
-        item['retweeted_status'] = data.get('retweeted_status')
-        item['weibo_url'] = data.get('weibo_url')
+        item["release_time"] = data.get("release_time")
+        item["release_state"] = data.get("release_state")
+        item["is_repost"] = data.get("is_repost")
+        item["weibo"] = data.get("weibo")
+        item["weibo"] = data.get("weibo")
+        item["data"] = data.get("data")
+        item["share_image_url"] = data.get("share_image_url")
+        item["create_time"] = data.get("create_time")
+        item["media_id"] = data.get("media_id")
+        item["label_id"] = data.get("label_id")
+        item["other_keyword"] = data.get("other_keyword")
+        item["source"] = data.get("source")
+        item["star_keyword"] = data.get("star_keyword")
+        item["dynamicsource_id"] = data.get("dynamicsource_id")
+        item["description"] = data.get("description")
+        item["url"] = data.get("url")
         return item

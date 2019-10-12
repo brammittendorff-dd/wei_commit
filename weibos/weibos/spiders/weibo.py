@@ -16,7 +16,7 @@ from selenium.webdriver.support.wait import WebDriverWait
 from urllib import parse
 from scrapy_redis.spiders import RedisSpider
 from weibos.database.db import session
-from weibos.database.models import Source,Dynamic,Cookies
+from weibos.database.models import Dynamicsource,Dynamic
 from weibos.items import WeibosItem
 class WeiboSpider(RedisSpider):
 
@@ -30,8 +30,8 @@ class WeiboSpider(RedisSpider):
     #     model.weibo_additional_id) + '&luicode=10000011&lfid=100103type%3D1%26q%3D' + weiboid + '&type=uid&value=' + str(
     #     model.weibo_additional_id) + '&containerid=' + model.container_id
     custom_settings = {
-        "CONCURRENT_REQUESTS": 5,
-        "DOWNLOAD_DELAY": 1,
+        "CONCURRENT_REQUESTS": 1,
+        "DOWNLOAD_DELAY": 2,
         'DEFAULT_REQUEST_HEADERS': {
             "User-Agent": "Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.132 Safari/537.36"
         },
@@ -61,42 +61,42 @@ class WeiboSpider(RedisSpider):
     def __init__(self):
         self.r = redis.Redis(host="47.110.95.150", port=6379,password="Bitgraph818")
         self.s = requests.session()
+        self.BASE_URL = "https://m.weibo.cn"
         self.s.verify=False
         self.headers={
             "User-Agent": "Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.132 Safari/537.36"
-
         }
-        self.BASE_URL = "https://m.weibo.cn"
+        self.s.headers=self.headers
+        #self.s.cookies=self.up_cookies()
+
     #从redis拿取链接抓取
     def start_requests(self):
         res=self.r.lpop('weibo:start_urls')
         if not res:
             return
         url=res.decode()
-
-
-
         yield scrapy.Request(url=url,callback=self.parse,headers=self.headers,dont_filter=True)
 
     def parse(self, response):
-        cookies = self.up_cookies()
+
         print(response.meta)
         meta = response.meta
         #匹配containerid
-        con_id=re.search('containerid=(.*?)&',response.url).group(1)
+        #https://m.weibo.cn/api/container/getIndex?uid=1642591402&luicode=10000011&lfid=100103type%3D1%26q%3D%E6%96%B0%E6%B5%AA%E5%A8%B1%E4%B9%90&type=uid&value=1642591402&containerid=1076031642591402&page=
+        con_id=re.search('uid=(.*?)&',response.url).group(1)
         #搜索此id在source表中model
-        model=session.query(Source).filter(Source.container_id == con_id).first()
+        model=session.query(Dynamicsource).filter(Dynamicsource.weibo_ID == con_id).first()
         onepage=re.search('&page=(.*)',response.url).group(1)
         # #判断是否为首页
         #TODO 链接去重
-        if not onepage:
+        if onepage == "0":
             if model:
                 lists=[]
                 #拿到此id所有动态
-                models = session.query(Dynamic).filter(Dynamic.source_id == model.id).all()
+                models = session.query(Dynamic).filter(Dynamic.dynamicsource_id == model.id).all()
                 for i in models:
-                    if i.tw_or_ins == 3:
-                        lists.append(i.weibo_url)
+
+                    lists.append(i.url)
                 if lists:
                     meta["urls"] = lists
                 else:
@@ -109,23 +109,28 @@ class WeiboSpider(RedisSpider):
             cards = res['data']['cards']
         else:
             return
+
         for card in cards:
             if card['card_type'] == 9:
                 mblog = card.get('mblog')
                 if not mblog:
                     return
+                print(mblog)
                 if 'retweeted_status' in mblog:
-                    #print(22222222222222222)
-                    item=self.parse_retweet(mblog, meta)
-                    if not item:
-                        continue
-                    if item==100:
-                        return
-                    item=self.to_item(item)
-                    #print(item)
-                    yield item
+                    continue
+                    # print(2222222222222222)
+                    # item=self.parse_retweet(mblog, meta)
+                    # if not item:
+                    #     continue
+                    # if item==100:
+                    #     return
+                    # item=self.to_item(item)
+                    # #print(item)
+                    # yield item
                 else:
                     item = self.parse_status(mblog, meta)
+                    if item == 100:
+                        return
                     if not item:
                         continue
                     item=self.to_item(item)
@@ -133,16 +138,16 @@ class WeiboSpider(RedisSpider):
                         return
                     #print(item)
                     yield item
-
+        print(onepage)
         try:
-            print(res['data']['cardlistInfo'])
-            page = res['data']['cardlistInfo']['page']
-            print(page)
-            if page and page<11:
-                weiboid = parse.quote(model.weibo_id)
+            #print(res['data']['cardlistInfo'])
+            #page = res['data']['cardlistInfo']['page']
+            page = int(onepage)+1
+            if page:
+                weiboid = parse.quote(model.name)
                 #meta = {"model": model}
-                url = self.CELEBRITY_NEWS_API_URL.format(str(model.weibo_additional_id), weiboid,
-                                                         str(model.weibo_additional_id), model.container_id, str(page))
+                url = self.CELEBRITY_NEWS_API_URL.format(str(model.weibo_ID), weiboid,
+                                                         str(model.weibo_ID), "107603"+str(model.weibo_ID), str(page))
                 yield scrapy.Request(url=url, meta=meta, headers=self.headers,callback=self.parse,dont_filter=True
                                      )
         except:
@@ -171,12 +176,18 @@ class WeiboSpider(RedisSpider):
     def parse_status(self, mblog, model=None):
         item={}
         try:
+
             mid=mblog.get('mid')
-            item["weibo_url"]="https://m.weibo.cn/detail/"+str(mid)
-            if item["weibo_url"] in model["urls"]:
+            item["url"]="https://m.weibo.cn/detail/"+str(mid)
+            if item["url"] in model["urls"]:
                 print(5555555555555555)
                 return
             item["release_time"] = self.generate_timestamp(mblog)
+            if int(item["release_time"]) == 500:
+                return
+            if int(item["release_time"]) < 1476258282:
+                print(123456798766643534534534)
+                return 100
             #print(item["release_time"],model["model"].last_weibo_timestamp)
             # if int(item["release_time"]) < model["model"].last_weibo_timestamp:
             #     return
@@ -185,33 +196,44 @@ class WeiboSpider(RedisSpider):
             #     print(66666666666)
             #     return
             #self.update(model["model"],item)
-            item["weibo_id"] = mblog.get('user').get('id')
-            item["nick_name"] = mblog.get('user').get('screen_name')
+            item["description"]=model["model"].name+"发布了微博"
+            #item["weibo_id"] = mblog.get('user').get('id')
+            item["source"] = mblog.get('user').get('screen_name')
             avatar_url = mblog.get('user').get('profile_image_url')
             # target_path=os.path.join(os.getcwd()+"/weibo",str(model["model"].id))
             # if not os.path.isdir(target_path):
             #     os.mkdir(target_path)
             # avatar_url = upload_weibo_media(avatar_url,target_path)
-            item["avatar_url"] = avatar_url
+            #item["avatar_url"] = avatar_url
             #os.remove(avatar_url[0].replace("\\", "/"))
-            item["tw_or_ins"] = 3
-            item["author_id_rl"] = model["model"].id
+            item["weibo"] = 1
+            item["dynamicsource_id"] = model["model"].id
             # model.mid = mblog.get('mid')
             text = mblog.get('text')
             str_first = re.sub('<.*?>', "", text)
-            item["data_en"] = str_first
-            item["type"]=json.dumps(["hanyu"])
+            item["data"] = str_first
+            item["share_image_url"]=""
+            #item["type"]=json.dumps(["hanyu"])
             # model["data_ch"] = ""
             # model["data_en"]=""
             models = self.replace_media_url(model["model"],mblog)
             item["media_id"] = models
-            item["is_repost"] = False
+            #item["is_repost"] = False
             #print(item)
             # print(model)
             return item
         except:
             return
-
+    def parse_ip(self):
+        res=requests.get("http://webapi.http.zhimacangku.com/getip?num=1&type=2&pro=0&city=0&yys=0&port=11&pack=67493&ts=0&ys=0&cs=0&lb=1&sb=0&pb=45&mr=1&regions=")
+        data=res.json()["data"][0]
+        ip=data["ip"]
+        port=data["port"]
+        proxies = {
+            "http": "http://"+str(ip)+":"+str(port),
+            "https": "https://"+str(ip)+":"+str(port),
+        }
+        return proxies
     def generate_timestamp(self, mblog):
         #burl = "https://m.weibo.cn/status/{}".format(mblog.get('mid'))
 
@@ -222,24 +244,40 @@ class WeiboSpider(RedisSpider):
             return int(time.time())
         if "+0800" not in created_at:
             burl = "https://m.weibo.cn/detail/{}".format(mblog.get('mid'))
+
+
+                #yield scrapy.Request(url=burl,callback=self.m_time)
             try:
                 res = self.s.get(burl).text
+                time.sleep(1)
+                if "微博内打开" in res:
+                    return 500
                 created_at = re.search('"created_at": "(.*?)"', res).group(1)
+                date = datetime.datetime.strptime(created_at, '%a %b %d %H:%M:%S %z %Y')
+                # print(int(time.mktime(date.timetuple())))
+                return int(time.mktime(date.timetuple()))
             except:
-                time.sleep(2)
+                print("ssssssssssssssss"+burl)
                 try:
+                    time.sleep(1)
+                    self.s.proxies = self.parse_ip()
                     res = self.s.get(burl).text
+                    if "微博内打开" in res:
+                        return 500
                     created_at = re.search('"created_at": "(.*?)"', res).group(1)
+                    date = datetime.datetime.strptime(created_at, '%a %b %d %H:%M:%S %z %Y')
+                    # print(int(time.mktime(date.timetuple())))
+                    return int(time.mktime(date.timetuple()))
                 except:
-                    print(burl)
-                    print("ip被封了。。。。。。。。。")
+                    print("ssssssssssssssss" + burl)
                     created_at=int(time.time())
-                    return created_at
+                    return 500
         # print(created_at)
         if len(created_at.split(' ')) > 5:
             date = datetime.datetime.strptime(created_at, '%a %b %d %H:%M:%S %z %Y')
             # print(int(time.mktime(date.timetuple())))
             return int(time.mktime(date.timetuple()))
+
     def make_time(self, created_at, param):
         value = int(re.search('\d+', created_at).group())
         params = {param: value}
@@ -305,23 +343,18 @@ class WeiboSpider(RedisSpider):
         #twr_item["source_id"] = scrapy.Field()
         twr_item["release_time"] = item.get("release_time")
         twr_item["release_state"] = item.get("release_state")
-        #twr_item["read_amount"] = scrapy.Field()
         twr_item["is_repost"] = item.get("is_repost")
-        twr_item["weibo_id"]=item.get("weibo_id")
-        twr_item["tw_or_ins"] = item.get("tw_or_ins")
-        twr_item["nick_name"]=item.get("nick_name")
-        twr_item["author_id_rl"]=item.get("author_id_rl")
-        #twr_item["correct_state"] = scrapy.Field()
-        twr_item["data_en"] = item.get("data_en")
-        twr_item["avatar_url"]=item.get("avatar_url")
+        twr_item["data"] = item.get("data")
+        twr_item["share_image_url"] = item.get("share_image_url")
+        twr_item["create_time"] = item.get("create_time")
         twr_item["media_id"] = item.get("media_id")
-        twr_item["retweeted_status"]=item.get("retweeted_status")
-        twr_item["type"] = item.get("type")
-        twr_item["weibo_url"]=item.get("weibo_url")
-        # twr_item["data_ch"] = scrapy.Field()
-        # twr_item["share_image_url"] = scrapy.Field()
-        # twr_item["create_time"] = scrapy.Field()
-        # twr_item["description"] = scrapy.Field()
+        twr_item["label_id"] = item.get("label_id")
+        twr_item["other_keyword"] = item.get("other_keyword")
+        twr_item["source"] = item.get("source")
+        twr_item["star_keyword"] = item.get("star_keyword")
+        twr_item["dynamicsource_id"] = item.get("dynamicsource_id")
+        twr_item["url"] = item.get("url")
+        twr_item["description"]=item.get("description")
         return twr_item
     def update(self, model,item):
         release_time = item["release_time"]
@@ -334,7 +367,7 @@ class WeiboSpider(RedisSpider):
 
         cook = self.getcookies()
         username = cook.username
-        #print(username)
+        print(username)
         password = cook.password
         # self.star = star
         # self.target_path = os.path.join(os.getcwd(), str(3))
@@ -356,7 +389,7 @@ class WeiboSpider(RedisSpider):
         return cookies
         # self.sign_if_needed(cookies)
     def getcookies(self):
-        cooks = session.query(Cookies).all()
+        cooks = session.query(Cookie).all()
         cook = random.choice(cooks)
         return cook
 
@@ -364,7 +397,7 @@ class WeiboSpider(RedisSpider):
     #     result = session.execute('select mid from informations_sdynamicswb where star_id={}'.format(self.star.id)).fetchall()
     #     scraped_mblog_list = [str(item[0]) for item in result]
     #     return scraped_mblog_list
-    #
+
     # def sign_if_needed(self, cookies):
     #     self.driver.get(CELEBRITY_NEWS_URL.format(self.star.container_id))
     #     for key, value in cookies.items():
@@ -437,12 +470,12 @@ class WeiboSpider(RedisSpider):
     def login(self, cook, username, password):
         display = Display(visible=0, size=(800, 600))
         display.start()
-        self.driver = webdriver.Firefox()
-        # options = webdriver.ChromeOptions()
-        # options.add_argument('--headless')
-        # # self.driver = webdriver.Chrome(chrome_options=options)
-        # self.driver = webdriver.Chrome(executable_path=r"C:\Temp\phantomjs-2.1.1-windows\chromedriver.exe",
-        #                                chrome_options=options)
+        #self.driver = webdriver.Firefox()
+        options = webdriver.ChromeOptions()
+        options.add_argument('--headless')
+        # self.driver = webdriver.Chrome(chrome_options=options)
+        self.driver = webdriver.Chrome(executable_path=r"C:\Temp\phantomjs-2.1.1-windows\chromedriver.exe",
+                                       chrome_options=options)
 
         self.driver.get('https://passport.weibo.cn/signin/login')
         time.sleep(3)

@@ -3,8 +3,7 @@
 import sys
 #sys.path.append('/home/commit/wei_commit/weibos')
 from database.db import session
-from database.models import Keyword, Topic, Dynamic, TempUser, DynamicUser, RepostDynamic,\
-    Media, RepostMedia, Source, DynamicTopic, SourceTopic, AccessToken
+from database.models import Dynamicsource,Dynamic
 import random
 import time
 #from youdao_translator import translate
@@ -282,5 +281,3 @@ class JsonParser:
                         if suggestion != 'pass':
                             return 1
                     return 0
-# a=[{'avatar_url': 'https://entertain-kr.oss-cn-hangzhou.aliyuncs.com/15688009044800618.jpg', 'release_time': 1564979953, 'weibo_id': 5038104889, 'tw_or_ins': 3, 'nick_name': '崔秀英_snsd', 'author_id_rl': 36, 'data_en': '这12年我们一起经历了无数快乐的时光 💕 我们一起走下去吧💝 ', 'media_id': [{'url': 'https://entertain-kr.oss-cn-hangzhou.aliyuncs.com/1568800904779428.jpg', 'pic_width': 403, 'pic_height': 270, 'is_video': False}], 'retweeted_status': None, 'weibo_url': 'https://m.weibo.cn/detail/4401907328472754'}]
-# JsonParser(a).get_dynamic()

@@ -1,0 +1,1 @@
+sqlacodegen --noviews --noconstraints --outfile=models.py mysql://root:mysql@47.110.76.95:3306/Bit_test

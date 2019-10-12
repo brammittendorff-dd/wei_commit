@@ -13,7 +13,7 @@ from pyvirtualdisplay import Display
 from selenium.webdriver.support.wait import WebDriverWait
 from db import session
 from model import Cookies,Commit
-
+from pymongo import MongoClient
 
 class CommitsSpider():
     # name = 'commits'
@@ -24,23 +24,29 @@ class CommitsSpider():
     # start_urls = ['https://m.weibo.cn/comments/hotflow?id=4408547318040846&mid=4408547318040846&max_id_type=0']
 
     def __init__(self):
+        #评论翻页链接
         self.commit_url = "https://m.weibo.cn/comments/hotflow?id={}&mid={}&{}max_id_type=0"
         # https://m.weibo.cn/comments/hotflow?id=4414569407372021&mid=4414569407372021&max_id=139250354826359&max_id_type=0
         # https://m.weibo.cn/comments/hotflow?id=4414569407372021&mid=4414569407372021&max_id=138838037500247&max_id_type=0
         # self.since_id = None
-        self.BASE_URL = "https://m.weibo.cn"
+        self.BASE_URL = "https://m.weibo.cn"#微博主页判断cookies
         self.s = requests.session()
+        conn = MongoClient('127.0.0.1', 27017)
+        db = conn.mydb  # 连接mydb数据库，没有则自动创建
+        self.my_set = db.weibo_commit # 使用test_set集合，没有则自动创建
         self.s.verify=False
         self.s.headers={
             "user-agent": "Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/65.0.3325.181 Safari/537.36"
         }
    #     # self.current_timestamp = 0
+    #查询mysql中数据是否存在
     def get_bid(self,mid):
         all_models=session.query(Commit).filter(Commit.mid==mid).all()
         all_models_list=[]
         if all_models:
             all_models_list=[i.bid for i in all_models]
         return all_models_list
+    #请求微博详情页链接
     def starts(self,urls):
         if not urls:
             return
@@ -52,6 +58,7 @@ class CommitsSpider():
         # #print(response.text)
 
         self.parse(response)
+    #获取登录cookies
     def up_cookies(self):
 
         cook = self.getcookies()
@@ -77,7 +84,7 @@ class CommitsSpider():
         #self.update_params()
         return cookies
         # self.sign_if_needed(cookies)
-
+    #
     def parse(self, response):
         url = response.url
         mid = url.split("/")[-1]
@@ -89,7 +96,7 @@ class CommitsSpider():
         commit_url = self.commit_url.format(mid, mid, "")
         html=self.s.get(commit_url).json()
         self.detail(html,mid,bid_lists)
-
+    #评论详情页解析
     def detail(self, html,mid,bid_lists):
         if html["ok"] == 0:
             return
@@ -105,10 +112,13 @@ class CommitsSpider():
                 item["detail_url"]="https://m.weibo.cn/detail/"+str(mid)
                 # 评论唯一标示
                 item["bid"] = i.get("bid")
-                #TODO 确定跟新方法，每次抓取更新还是只更新新发
-                if item["bid"] in bid_lists:
-                    print("数据已存在")
+                res=self.my_set.find_one({"bid":item["bid"]})
+                if res:
                     continue
+                #TODO 确定跟新方法，每次抓取更新还是只更新新发
+                # if item["bid"] in bid_lists:
+                #     print("数据已存在")
+                #     continue
                 # item["floor_number"]=i.get("floor_number")
                 # 赞
                 item["like_count"] = int(i.get("like_count"))
@@ -149,12 +159,19 @@ class CommitsSpider():
                 # 评论人头像
                 item["profile_image_url"] = i["user"]["profile_image_url"]
                 print(item)
-                self.save_model(item)
+                self.save_mongo(item)
+                #self.save_model(item)
             max_id = html["data"]["max_id"]
             if max_id:
                 commit_url = self.commit_url.format(mid, mid, "max_id=" + str(max_id) + "&")
                 html=self.s.get(commit_url).json()
                 self.detail(html,mid,bid_lists)
+    #保存到mongo
+    def save_mongo(self,item):
+        res=self.my_set.find_one(item)
+        if not res:
+            self.my_set.insert(item)
+    #保存到mysql
     def save_model(self,item):
 
         commit_models=session.query(Commit).filter(Commit.bid==item.get("bid")).all()
@@ -180,7 +197,7 @@ class CommitsSpider():
             print("插入数据失败")
             session.rollback()
 
-
+    #解析时间戳
     def trans_format(self, time_string, from_format="%a %b %d %H:%M:%S +0800 %Y"):
         """
         @note 时间格式转化
@@ -190,9 +207,10 @@ class CommitsSpider():
         :return:
         """
         time_struct = time.strptime(time_string, from_format)
-        #times = int(time.mktime(time_struct))
+        times = int(time.mktime(time_struct))
         # times = time.strftime(to_format, time_struct)
-        return time_struct
+
+        return times
 
     def getcookies(self):
         cooks = session.query(Cookies).all()
@@ -326,9 +344,9 @@ class CommitsSpider():
 
 if __name__=="__main__":
     com=CommitsSpider()
-    print(sys.argv)
-    url=sys.argv[1]
+    # print(sys.argv)
+    # url=sys.argv[1]
     # print(url)
-    #url="https://m.weibo.cn/detail/4415278761113511"
+    url="https://m.weibo.cn/detail/4415278761113511"
     com.starts(url)
 
