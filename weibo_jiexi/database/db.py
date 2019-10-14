@@ -9,3 +9,4 @@ engine = create_engine('mysql+pymysql://root:mysql@47.110.76.95/'
 
 DBSession = sessionmaker(bind=engine)
 session = scoped_session(DBSession)
+#sqlacodegen --noviews --noconstraints --outfile=models.py mysql://root:mysql@47.110.76.95:3306/Bit_test

@@ -17,8 +17,10 @@ class WeiboJiexiPipeline(object):
         }
     def process_item(self, item, spider):
         data=dict(item)
+        print(33333333333)
+        print(data)
+        print(4444444444444444)
         item=self.oss_up(data)
-        print(item)
         #lists=[]
         #lists.append(item)
         weibo_json_parse.JsonParser(item).get_dynamic()

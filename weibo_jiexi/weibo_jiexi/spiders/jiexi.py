@@ -62,7 +62,6 @@ class JiexiSpider(RedisSpider):
     def parse(self, response):
 
         data=response.meta["item"]
-        print(data)
         item=self.to_item(data)
         yield item
     def to_item(self,data):
@@ -70,8 +69,8 @@ class JiexiSpider(RedisSpider):
         item["release_time"] = data.get("release_time")
         item["release_state"] = data.get("release_state")
         item["is_repost"] = data.get("is_repost")
-        item["weibo"] = data.get("weibo")
-        item["weibo"] = data.get("weibo")
+        #item["weibo"] = data.get("weibo")
+        #item["weibo"] = data.get("weibo")
         item["data"] = data.get("data")
         item["share_image_url"] = data.get("share_image_url")
         item["create_time"] = data.get("create_time")
@@ -79,7 +78,7 @@ class JiexiSpider(RedisSpider):
         #item["label_id"] = data.get("label_id")
         #item["other_keyword"] = data.get("other_keyword")
         #item["source"] = data.get("source")
-        item["dynamicsource"] = item.get("dynamicsource")
+        item["dynamicsource"] = data["dynamicsource"]
         item["star_keyword"] = data.get("star_keyword")
         item["dynamicsource_id"] = data.get("dynamicsource_id")
         item["description"] = data.get("description")
