@@ -103,10 +103,10 @@ class HH():
         except:
             return
 
-hh=HH()
-num=1
-while True:
-    print(num)
-    hh.parse()
-    num+=1
-
+# hh=HH()
+# num=1
+# while True:
+#     print(num)
+#     hh.parse()
+#     num+=1
+requests.get("https://www.baidu.com",verify = False)

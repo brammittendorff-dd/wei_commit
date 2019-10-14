@@ -182,12 +182,24 @@ class WeiboSpider(RedisSpider):
             if item["url"] in model["urls"]:
                 print(5555555555555555)
                 return
-            item["release_time"] = self.generate_timestamp(mblog)
+            text = mblog.get('text')
+            str_first = re.sub('<.*?>', "", text)
+            if "...全文" in str_first:
+                print(88888888888888888888844444444444444444444444)
+                res= self.generate_timestamp_text(mblog)
+                if len(res)==1:
+                    item["release_time"] = res
+                if len(res)==2:
+                    item["release_time"] = res[0]
+                    str_first=res[1]
+            else:
+                item["release_time"] = self.generate_timestamp(mblog)
             if int(item["release_time"]) == 500:
                 return
             if int(item["release_time"]) < 1476258282:
                 print(123456798766643534534534)
                 return 100
+            item["data"] = str_first
             #print(item["release_time"],model["model"].last_weibo_timestamp)
             # if int(item["release_time"]) < model["model"].last_weibo_timestamp:
             #     return
@@ -209,9 +221,7 @@ class WeiboSpider(RedisSpider):
             item["weibo"] = 1
             item["dynamicsource_id"] = model["model"].id
             # model.mid = mblog.get('mid')
-            text = mblog.get('text')
-            str_first = re.sub('<.*?>', "", text)
-            item["data"] = str_first
+
             item["share_image_url"]=""
             #item["type"]=json.dumps(["hanyu"])
             # model["data_ch"] = ""
@@ -234,6 +244,43 @@ class WeiboSpider(RedisSpider):
             "https": "https://"+str(ip)+":"+str(port),
         }
         return proxies
+    #未显示全文
+    def generate_timestamp_text(self, mblog):
+        #burl = "https://m.weibo.cn/status/{}".format(mblog.get('mid'))
+        burl = "https://m.weibo.cn/detail/{}".format(mblog.get('mid'))
+            #yield scrapy.Request(url=burl,callback=self.m_time)
+        try:
+            res = self.s.get(burl).text
+            time.sleep(1)
+            if "微博内打开" in res:
+                return 500
+            created_at = re.search('"created_at": "(.*?)"', res).group(1)
+            text=re.search('"text": "(.*?)",',res,re.S).group(1)
+            str_first = re.sub('<.*?>', "", text)
+            date = datetime.datetime.strptime(created_at, '%a %b %d %H:%M:%S %z %Y')
+            # print(int(time.mktime(date.timetuple())))
+            print(222222222222222222223333333333333333333333334444444444444444444444)
+            return int(time.mktime(date.timetuple())),str_first
+        except:
+            print("ssssssssssssssss"+burl)
+            try:
+                time.sleep(1)
+                self.s.proxies = self.parse_ip()
+                res = self.s.get(burl).text
+                if "微博内打开" in res:
+                    return 500
+                created_at = re.search('"created_at": "(.*?)"', res).group(1)
+                text = re.search('"text": "(.*?)",', res, re.S).group(1)
+                str_first = re.sub('<.*?>', "", text)
+                date = datetime.datetime.strptime(created_at, '%a %b %d %H:%M:%S %z %Y')
+                # print(int(time.mktime(date.timetuple())))
+                return int(time.mktime(date.timetuple())),str_first
+            except:
+                print("ssssssssssssssss" + burl)
+                created_at=int(time.time())
+                return 500
+
+    #以显示全文
     def generate_timestamp(self, mblog):
         #burl = "https://m.weibo.cn/status/{}".format(mblog.get('mid'))
 
@@ -388,10 +435,10 @@ class WeiboSpider(RedisSpider):
         #self.update_params()
         return cookies
         # self.sign_if_needed(cookies)
-    def getcookies(self):
-        cooks = session.query(Cookie).all()
-        cook = random.choice(cooks)
-        return cook
+    # def getcookies(self):
+    #     #cooks = session.query(Cookie).all()
+    #     #cook = random.choice(cooks)
+    #     return cook
 
     # def fetch_scraped_mblog(self):
     #     result = session.execute('select mid from informations_sdynamicswb where star_id={}'.format(self.star.id)).fetchall()

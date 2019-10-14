@@ -36,18 +36,17 @@ class Article(Base):
     __tablename__ = 'article'
 
     id = Column(INTEGER(11), primary_key=True)
-    label_id = Column(INTEGER(11), nullable=False)
-    title = Column(String(128), nullable=False)
+    label_id = Column(INTEGER(11))
+    title = Column(String(128))
     create_time = Column(DATETIME(fsp=6), nullable=False)
     release_time = Column(DATETIME(fsp=6), nullable=False)
     release_state = Column(INTEGER(11), nullable=False)
     read_amount = Column(INTEGER(11), nullable=False)
-    article_data = Column(LONGTEXT, nullable=False)
-    share_image_url = Column(String(32), nullable=False)
-    other_keyword = Column(String(128))
-    source = Column(String(128), nullable=False)
-    star_keyword = Column(String(128))
-    url = Column(String(128), nullable=False)
+    article_data = Column(LONGTEXT)
+    share_image_url = Column(String(32))
+    source = Column(String(128))
+    url = Column(String(128))
+    source_id = Column(String(128))
 
 
 class AuthGroup(Base):
@@ -109,6 +108,7 @@ class Baike(Base):
     citiao = Column(String(256))
     type = Column(INTEGER(11))
     sourcecategory_id = Column(INTEGER(11))
+    chushengriqi = Column(String(64))
 
 
 class Baikearound(Base):
@@ -584,6 +584,21 @@ class BallotOption(Base):
     option = Column(String(256), nullable=False)
 
 
+class Behaviorkeyword(Base):
+    __tablename__ = 'behaviorkeyword'
+
+    id = Column(INTEGER(11), primary_key=True)
+    keywordname = Column(String(512))
+
+
+class BehaviorkeywordManyEvent(Base):
+    __tablename__ = 'behaviorkeyword_many_event'
+
+    id = Column(INTEGER(11), primary_key=True)
+    behaviorkeyword_id = Column(INTEGER(11))
+    event_id = Column(INTEGER(11))
+
+
 class Cookie(Base):
     __tablename__ = 'cookie'
 
@@ -644,12 +659,11 @@ class Dynamic(Base):
     share_image_url = Column(String(32))
     create_time = Column(DATETIME(fsp=6))
     label_id = Column(INTEGER(11))
-    other_keyword = Column(String(128))
-    source = Column(String(128))
-    star_keyword = Column(String(128))
+    dynamicsource = Column(String(128), nullable=False)
     dynamicsource_id = Column(INTEGER(11))
     url = Column(String(256))
     updata_data = Column(LONGTEXT)
+    source_id = Column(INTEGER(11))
 
 
 class Dynamicsource(Base):
@@ -669,10 +683,9 @@ class Event(Base):
     event_time = Column(DATETIME(fsp=6))
     event_introduction = Column(LONGTEXT)
     create_time = Column(DATETIME(fsp=6), nullable=False)
-    star_keyword = Column(String(128))
-    other_keyword = Column(String(128))
     is_updata = Column(TINYINT(1), nullable=False)
     event_picture_url = Column(String(256))
+    source_id = Column(INTEGER(11))
 
 
 class EventGatherManyEvent(Base):
@@ -756,6 +769,13 @@ class MediaManyDyanmic(Base):
     id = Column(INTEGER(11), primary_key=True)
     media_id = Column(INTEGER(11))
     dynamic_id = Column(INTEGER(11))
+
+
+class Module(Base):
+    __tablename__ = 'module'
+
+    id = Column(INTEGER(11), primary_key=True)
+    module_name = Column(INTEGER(11))
 
 
 class Multimediamesource(Base):
@@ -886,8 +906,8 @@ class Sourcemodule(Base):
     __tablename__ = 'sourcemodule'
 
     id = Column(INTEGER(11), primary_key=True)
-    module_name = Column(LONGTEXT)
-    source_name = Column(LONGTEXT)
+    dynamiccsource_id = Column(INTEGER(11))
+    module_id = Column(INTEGER(11))
 
 
 class Sourcewhitelist(Base):

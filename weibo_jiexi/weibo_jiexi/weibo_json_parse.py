@@ -41,14 +41,19 @@ class JsonParser():
         try:
             session.flush()
         except:
+
             session.rollback()
+            raise Exception
         if self.lists.get("media_id") and dy_model.id:
             medias=self.lists.get("media_id")
             self.save_media(dy_model,medias)
         try:
             session.commit()
         except:
+
             session.rollbock()
+            raise Exception
+
     #图片视频存库
     def save_media(self,dy_model,medias):
         if not medias:
@@ -67,7 +72,9 @@ class JsonParser():
                 try:
                     session.flush()
                 except:
+
                     session.rollback()
+                    raise Exception
                 md = MediaManyDyanmic()
                 md.media_id = media_model.id
                 md.dynamic_id = dy_model.id
@@ -97,7 +104,9 @@ class JsonParser():
                     try:
                         session.flush()
                     except:
+
                         session.rollback()
+                        raise Exception
                     md=MediaManyDyanmic()
                     md.media_id=media_model.id
                     md.dynamic_id=dy_model.id
@@ -130,8 +139,8 @@ if __name__=="__main__":
 # content = requests.get('https://ww2.sinaimg.cn/bmiddle/75b45de6ly1g71foxotjij20p018gwj1.jpg').content
 # image1 = Image.open(BytesIO(content))
 # conteng2 = requests.get('https://ww2.sinaimg.cn/bmiddle/75b45de6ly1g71foxotjij20p018gwj1.jpg').content
-conteng2 = requests.get('https://ww2.sinaimg.cn/bmiddle/75b45de6ly1g71foxzwwzj20p018g43h.jpg').content
-image2 = Image.open(BytesIO(conteng2))
+#conteng2 = requests.get('https://ww2.sinaimg.cn/bmiddle/75b45de6ly1g71foxzwwzj20p018g43h.jpg').content
+#image2 = Image.open(BytesIO(conteng2))
 # hash1 = (phash(image1, highfreq_factor=4))
 # print(hash1)
 # from imagehash import hex_to_hash

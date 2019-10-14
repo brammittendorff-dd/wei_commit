@@ -50,7 +50,7 @@ class WeiboJiexiPipeline(object):
     def get_oss_img_url(self, url):
         filename = str(time.time()).replace('.', '') + '.jpg'
         # path = re.sub('[?=&%]', '', filename)
-        res = requests.get(url=url).content  # 设置代理
+        res = requests.get(url=url, verify=False).content  # 设置代理
         return upload(res, filename)
 
 
