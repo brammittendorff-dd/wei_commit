@@ -184,7 +184,7 @@ class WeiboSpider(RedisSpider):
                 return
             text = mblog.get('text')
             str_first = re.sub('<.*?>', "", text)
-            if "...全文" in str_first:
+            if "全文" in str_first:
                 print(88888888888888888888844444444444444444444444)
                 res= self.generate_timestamp_text(mblog)
                 if len(res)==1:
@@ -344,9 +344,12 @@ class WeiboSpider(RedisSpider):
                 item_model = dict()
                 #result1 = upload_weibo_media( pic_list['url'], target_path)
                 item_model["url"] = pic_list['url']
-                item_model["pic_width"] = pic_list['geo']['width']
-                item_model["pic_height"] = pic_list['geo']['height']
-                item_model["is_video"]=False
+                item_model["is_video"] = False
+                if "gif" in item_model["url"]:
+                    item_model["is_video"] = True
+                # item_model["pic_width"] = pic_list['geo']['width']
+                # item_model["pic_height"] = pic_list['geo']['height']
+
                 # model.large_width = pic_list['large']['geo']['width']
                 # model.large_height = pic_list['large']['geo']['height']
                 # url = pic_list['large']['url']

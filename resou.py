@@ -109,4 +109,6 @@ class HH():
 #     print(num)
 #     hh.parse()
 #     num+=1
-requests.get("https://www.baidu.com",verify = False)
+res=requests.get("https://wx1.sinaimg.cn/large/61e7f4aaly1g7x05zfr2eg20ef07zqv7.gif",verify = False).content
+with open("1.gif","wb") as f:
+    f.write(res)

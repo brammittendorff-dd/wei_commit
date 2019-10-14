@@ -1,6 +1,6 @@
 # coding: utf-8
 from sqlalchemy import Column, DateTime, Index, String, Text
-from sqlalchemy.dialects.mysql import DATETIME, INTEGER, LONGTEXT, SMALLINT, TINYINT
+from sqlalchemy.dialects.mysql import DATETIME, INTEGER, LONGTEXT, SMALLINT, TINYINT, VARCHAR
 from sqlalchemy.ext.declarative import declarative_base
 
 Base = declarative_base()
@@ -11,11 +11,11 @@ class Adminuser(Base):
     __tablename__ = 'adminuser'
 
     id = Column(INTEGER(11), primary_key=True)
-    first_name = Column(String(255), nullable=False)
-    last_name = Column(String(255), nullable=False)
-    login = Column(String(80), nullable=False, unique=True)
-    email = Column(String(255), nullable=False, unique=True)
-    password = Column(String(255), nullable=False)
+    first_name = Column(VARCHAR(255), nullable=False)
+    last_name = Column(VARCHAR(255), nullable=False)
+    login = Column(VARCHAR(80), nullable=False, unique=True)
+    email = Column(VARCHAR(255), nullable=False, unique=True)
+    password = Column(VARCHAR(255), nullable=False)
     active = Column(TINYINT(1), nullable=False)
     confirmed_at = Column(DATETIME(fsp=6), nullable=False)
 
@@ -24,9 +24,9 @@ class Allcomment(Base):
     __tablename__ = 'allcomment'
 
     id = Column(INTEGER(11), primary_key=True)
-    commrnt_content = Column(String(128), nullable=False)
-    commentator = Column(String(32), nullable=False)
-    comment_time = Column(String(32), nullable=False)
+    commrnt_content = Column(VARCHAR(128), nullable=False)
+    commentator = Column(VARCHAR(32), nullable=False)
+    comment_time = Column(VARCHAR(32), nullable=False)
     is_interesting = Column(TINYINT(1), nullable=False)
     comment_label = Column(INTEGER(11), nullable=False)
     event_id = Column(INTEGER(11), nullable=False)
@@ -37,23 +37,23 @@ class Article(Base):
 
     id = Column(INTEGER(11), primary_key=True)
     label_id = Column(INTEGER(11))
-    title = Column(String(128))
+    title = Column(VARCHAR(128))
     create_time = Column(DATETIME(fsp=6), nullable=False)
     release_time = Column(DATETIME(fsp=6), nullable=False)
     release_state = Column(INTEGER(11), nullable=False)
     read_amount = Column(INTEGER(11), nullable=False)
     article_data = Column(LONGTEXT)
-    share_image_url = Column(String(32))
-    source = Column(String(128))
-    url = Column(String(128))
-    source_id = Column(String(128))
+    share_image_url = Column(VARCHAR(32))
+    source = Column(VARCHAR(128))
+    url = Column(VARCHAR(128))
+    source_id = Column(VARCHAR(128))
 
 
 class AuthGroup(Base):
     __tablename__ = 'auth_group'
 
     id = Column(INTEGER(11), primary_key=True)
-    name = Column(String(80), nullable=False, unique=True)
+    name = Column(VARCHAR(80), nullable=False, unique=True)
 
 
 class AuthUser(Base):
@@ -76,39 +76,39 @@ class Baike(Base):
     __tablename__ = 'baike'
 
     id = Column(INTEGER(11), primary_key=True)
-    yiming = Column(String(64))
-    zhongwenming = Column(String(32))
-    waiwenming = Column(String(64))
-    cengyongming = Column(String(64))
-    chuohao = Column(String(64))
-    waihao = Column(String(64))
-    ribenyiming = Column(String(64))
-    yuanyiming = Column(String(64))
-    chenghu = Column(String(64))
-    yuanming = Column(String(64))
-    guoji = Column(String(64))
-    minzu = Column(String(64))
-    shengri = Column(String(64))
-    zuji = Column(String(64))
-    huji = Column(String(64))
-    jiaxiang = Column(String(64))
-    chushengde = Column(String(64))
-    zujiguxiang = Column(String(64))
-    zhengzhixinyang = Column(String(64))
-    shuxiang = Column(String(64))
-    xingzuo = Column(String(64))
-    xuexing = Column(String(64))
-    sanweichicun = Column(String(64))
-    shengao = Column(String(128))
-    tizhong = Column(String(128))
-    jiaochicun = Column(String(128))
-    xiema = Column(String(128))
-    xiehao = Column(String(128))
-    xuewei = Column(String(128))
-    citiao = Column(String(256))
+    yiming = Column(VARCHAR(64))
+    zhongwenming = Column(VARCHAR(32))
+    waiwenming = Column(VARCHAR(64))
+    cengyongming = Column(VARCHAR(64))
+    chuohao = Column(VARCHAR(64))
+    waihao = Column(VARCHAR(64))
+    ribenyiming = Column(VARCHAR(64))
+    yuanyiming = Column(VARCHAR(64))
+    chenghu = Column(VARCHAR(64))
+    yuanming = Column(VARCHAR(64))
+    guoji = Column(VARCHAR(64))
+    minzu = Column(VARCHAR(64))
+    shengri = Column(VARCHAR(64))
+    zuji = Column(VARCHAR(64))
+    huji = Column(VARCHAR(64))
+    jiaxiang = Column(VARCHAR(64))
+    chushengde = Column(VARCHAR(64))
+    zujiguxiang = Column(VARCHAR(64))
+    zhengzhixinyang = Column(VARCHAR(64))
+    shuxiang = Column(VARCHAR(64))
+    xingzuo = Column(VARCHAR(64))
+    xuexing = Column(VARCHAR(64))
+    sanweichicun = Column(VARCHAR(64))
+    shengao = Column(VARCHAR(128))
+    tizhong = Column(VARCHAR(128))
+    jiaochicun = Column(VARCHAR(128))
+    xiema = Column(VARCHAR(128))
+    xiehao = Column(VARCHAR(128))
+    xuewei = Column(VARCHAR(128))
+    citiao = Column(VARCHAR(256))
     type = Column(INTEGER(11))
     sourcecategory_id = Column(INTEGER(11))
-    chushengriqi = Column(String(64))
+    chushengriqi = Column(VARCHAR(64))
 
 
 class Baikearound(Base):
@@ -116,7 +116,7 @@ class Baikearound(Base):
 
     id = Column(INTEGER(11), primary_key=True)
     baike_id = Column(INTEGER(11))
-    zongjiao = Column(String(64))
+    zongjiao = Column(VARCHAR(64))
     zongjiaoxinyang = Column(LONGTEXT)
     xinyangzongjiao = Column(LONGTEXT)
     jingtongyuyan = Column(LONGTEXT)
@@ -285,43 +285,43 @@ class Baikearound(Base):
     mudi = Column(LONGTEXT)
     jiuduzhuanye = Column(LONGTEXT)
     jiankuan = Column(LONGTEXT)
-    shengxiao = Column(String(64))
+    shengxiao = Column(VARCHAR(64))
     fensikouhao = Column(LONGTEXT)
     zichuangchaoliupinpai = Column(LONGTEXT)
     chuanglipinpai = Column(LONGTEXT)
     jingdianyingmuxingxiang = Column(LONGTEXT)
-    wenzhijibie = Column(String(64))
-    huajuzhicheng = Column(String(64))
+    wenzhijibie = Column(VARCHAR(64))
+    huajuzhicheng = Column(VARCHAR(64))
     kouhao = Column(LONGTEXT)
     guojiazhicheng = Column(LONGTEXT)
     baidutieba = Column(LONGTEXT)
     manyizijidedifang = Column(LONGTEXT)
-    nonglishengri = Column(String(64))
-    chunvzuo = Column(String(256))
-    zhuanjizongxiaoliang = Column(String(64))
+    nonglishengri = Column(VARCHAR(64))
+    chunvzuo = Column(VARCHAR(256))
+    zhuanjizongxiaoliang = Column(VARCHAR(64))
     hunlian = Column(LONGTEXT)
     zuikaixindeshi = Column(LONGTEXT)
-    zhongfangjingjigongsi = Column(String(128))
-    xuanchuanqihuagongsi = Column(String(128))
-    cengshutuanti = Column(String(128))
-    yuanzuhe = Column(String(128))
-    xiongdizuhe = Column(String(128))
-    qianrenchengyuan = Column(String(128))
-    zuhedandang = Column(String(128))
-    gerenzhuanshugongsi = Column(String(128))
-    suozaizuhe = Column(String(128))
-    jiuzhigongsi = Column(String(128))
-    suoshuxiaofendui = Column(String(128))
-    huodongqijian = Column(String(128))
-    zuhexiaofendui = Column(String(128))
-    chudaori = Column(String(128))
-    zuhechudaori = Column(String(128))
-    chudaoshijian = Column(String(128))
-    chudaodi = Column(String(128))
-    chudaoriqi = Column(String(128))
-    solochudaori = Column(String(128))
-    zhuanyejineng = Column(String(128))
-    suoshuyundongdui = Column(String(128))
+    zhongfangjingjigongsi = Column(VARCHAR(128))
+    xuanchuanqihuagongsi = Column(VARCHAR(128))
+    cengshutuanti = Column(VARCHAR(128))
+    yuanzuhe = Column(VARCHAR(128))
+    xiongdizuhe = Column(VARCHAR(128))
+    qianrenchengyuan = Column(VARCHAR(128))
+    zuhedandang = Column(VARCHAR(128))
+    gerenzhuanshugongsi = Column(VARCHAR(128))
+    suozaizuhe = Column(VARCHAR(128))
+    jiuzhigongsi = Column(VARCHAR(128))
+    suoshuxiaofendui = Column(VARCHAR(128))
+    huodongqijian = Column(VARCHAR(128))
+    zuhexiaofendui = Column(VARCHAR(128))
+    chudaori = Column(VARCHAR(128))
+    zuhechudaori = Column(VARCHAR(128))
+    chudaoshijian = Column(VARCHAR(128))
+    chudaodi = Column(VARCHAR(128))
+    chudaoriqi = Column(VARCHAR(128))
+    solochudaori = Column(VARCHAR(128))
+    zhuanyejineng = Column(VARCHAR(128))
+    suoshuyundongdui = Column(VARCHAR(128))
     jibenxinxi = Column(LONGTEXT)
 
 
@@ -461,20 +461,20 @@ class Baikerelationship(Base):
     tonggongsiyiren = Column(LONGTEXT)
     nanpengyou = Column(LONGTEXT)
     sudi = Column(LONGTEXT)
-    dixi = Column(String(512))
-    gonggong = Column(String(128))
-    haoyou = Column(String(128))
-    jimu = Column(String(128))
-    jiuma = Column(String(128))
-    laoshi = Column(String(128))
-    meimei = Column(String(128))
-    waigong = Column(String(128))
-    waishengnv = Column(String(128))
-    xuesheng = Column(String(128))
+    dixi = Column(VARCHAR(512))
+    gonggong = Column(VARCHAR(128))
+    haoyou = Column(VARCHAR(128))
+    jimu = Column(VARCHAR(128))
+    jiuma = Column(VARCHAR(128))
+    laoshi = Column(VARCHAR(128))
+    meimei = Column(VARCHAR(128))
+    waigong = Column(VARCHAR(128))
+    waishengnv = Column(VARCHAR(128))
+    xuesheng = Column(VARCHAR(128))
     yima = Column(LONGTEXT)
-    yinv = Column(String(128))
-    yizi = Column(String(128))
-    yuefu = Column(String(128))
+    yinv = Column(VARCHAR(128))
+    yizi = Column(VARCHAR(128))
+    yuefu = Column(VARCHAR(128))
     biaodi = Column(LONGTEXT)
     biaogufu = Column(LONGTEXT)
     biaojie = Column(LONGTEXT)
@@ -563,7 +563,7 @@ class Ballot(Base):
     id = Column(INTEGER(11), primary_key=True)
     create_time = Column(DATETIME(fsp=6), nullable=False)
     over_time = Column(DATETIME(fsp=6), nullable=False)
-    title = Column(String(512), nullable=False)
+    title = Column(VARCHAR(512), nullable=False)
     event_id = Column(INTEGER(11))
 
 
@@ -581,14 +581,14 @@ class BallotOption(Base):
 
     id = Column(INTEGER(11), primary_key=True)
     ballot_id = Column(INTEGER(11), nullable=False)
-    option = Column(String(256), nullable=False)
+    option = Column(VARCHAR(256), nullable=False)
 
 
 class Behaviorkeyword(Base):
     __tablename__ = 'behaviorkeyword'
 
     id = Column(INTEGER(11), primary_key=True)
-    keywordname = Column(String(512))
+    keywordname = Column(VARCHAR(512))
 
 
 class BehaviorkeywordManyEvent(Base):
@@ -616,6 +616,13 @@ class Dataorigin(Base):
     article_id = Column(INTEGER(11))
     dynamic_id = Column(INTEGER(11))
     label_id = Column(INTEGER(11))
+
+
+class Datatype(Base):
+    __tablename__ = 'datatype'
+
+    id = Column(INTEGER(11), primary_key=True)
+    name = Column(String(64))
 
 
 class DjangoContentType(Base):
@@ -663,7 +670,7 @@ class Dynamic(Base):
     dynamicsource_id = Column(INTEGER(11))
     url = Column(String(256))
     updata_data = Column(LONGTEXT)
-    source_id = Column(INTEGER(11))
+    source_id = Column(String(128))
 
 
 class Dynamicsource(Base):
@@ -685,7 +692,10 @@ class Event(Base):
     create_time = Column(DATETIME(fsp=6), nullable=False)
     is_updata = Column(TINYINT(1), nullable=False)
     event_picture_url = Column(String(256))
-    source_id = Column(INTEGER(11))
+    source_id = Column(String(255))
+    dataytpe_id = Column(INTEGER(11), nullable=False)
+    likeamount = Column(INTEGER(11), nullable=False)
+    unlikeamount = Column(INTEGER(11), nullable=False)
 
 
 class EventGatherManyEvent(Base):
@@ -710,6 +720,7 @@ class Eventgather(Base):
     state = Column(INTEGER(11), nullable=False)
     type = Column(INTEGER(11), nullable=False)
     update_time = Column(DATETIME(fsp=6), nullable=False)
+    dataytpe_id = Column(INTEGER(11), nullable=False)
 
 
 class Focu(Base):
@@ -879,29 +890,6 @@ class Source(Base):
     source_name = Column(LONGTEXT)
 
 
-class SourceSourcecategory(Base):
-    __tablename__ = 'source_sourcecategory'
-
-    id = Column(INTEGER(11), primary_key=True)
-    source_id = Column(INTEGER(11), nullable=False)
-    sourcecategory_id = Column(INTEGER(11), nullable=False)
-
-
-class Sourceblacklist(Base):
-    __tablename__ = 'sourceblacklist'
-
-    id = Column(INTEGER(11), primary_key=True)
-    blackcontent = Column(String(32), nullable=False)
-    sourcecategory_id = Column(INTEGER(11), nullable=False)
-
-
-class Sourcecategory(Base):
-    __tablename__ = 'sourcecategory'
-
-    id = Column(INTEGER(11), primary_key=True)
-    sourcecategoryname = Column(String(32), nullable=False)
-
-
 class Sourcemodule(Base):
     __tablename__ = 'sourcemodule'
 
@@ -910,12 +898,12 @@ class Sourcemodule(Base):
     module_id = Column(INTEGER(11))
 
 
-class Sourcewhitelist(Base):
-    __tablename__ = 'sourcewhitelist'
+class Sourcenickname(Base):
+    __tablename__ = 'sourcenickname'
 
     id = Column(INTEGER(11), primary_key=True)
-    whitecontent = Column(String(32), nullable=False)
-    sourcecategory_id = Column(INTEGER(11), nullable=False)
+    nickname = Column(String(256))
+    source_id = Column(INTEGER(11))
 
 
 class Special(Base):
@@ -932,6 +920,7 @@ class Special(Base):
     type = Column(INTEGER(11), nullable=False)
     creat_time = Column(DATETIME(fsp=6))
     update_time = Column(DATETIME(fsp=6), nullable=False)
+    dataytpe_id = Column(INTEGER(11), nullable=False)
 
 
 class SpecialManyEvent(Base):
@@ -1001,7 +990,6 @@ class Userfloweevent(Base):
     user_id = Column(INTEGER(11), nullable=False)
     is_push = Column(TINYINT(1))
     event_id = Column(INTEGER(11), nullable=False)
-    label = Column(String(128), nullable=False)
     followe_time = Column(String(32), nullable=False)
     last_time = Column(String(32), nullable=False)
 
@@ -1013,7 +1001,6 @@ class Userflowespecial(Base):
     user_id = Column(INTEGER(11), nullable=False)
     is_push = Column(TINYINT(1))
     special_id = Column(INTEGER(11), nullable=False)
-    label = Column(String(128), nullable=False)
     followe_time = Column(String(32), nullable=False)
     last_time = Column(String(32), nullable=False)
 
@@ -1024,10 +1011,9 @@ class Userflowestar(Base):
     id = Column(INTEGER(11), primary_key=True)
     user_id = Column(INTEGER(11), nullable=False)
     is_push = Column(TINYINT(1))
-    special_id = Column(INTEGER(11), nullable=False)
-    label = Column(String(128), nullable=False)
     followe_time = Column(String(32), nullable=False)
     last_time = Column(String(32), nullable=False)
+    source_id = Column(INTEGER(11))
 
 
 class Video(Base):

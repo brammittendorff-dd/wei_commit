@@ -1,15 +1,15 @@
 #coding=utf-8
 import time
 from database.models import Dynamic,Dynamicsource,Media,MediaManyDyanmic
-from database.db import session
+from database.db import session,engine
 #from PIL import Image
-
+import json
 from imagehash import phash, average_hash,hex_to_hash
 import requests
 from PIL import Image
 from io import BytesIO
 import imagehash
-#lists={'dynamicsource':'新浪音乐','release_time': 15633435433, 'release_state': 0, 'read_amount': 0, 'description': '杨幂FashionNotes\xa0发布了微博', 'correct_state': 0, 'data': '杨幂｜#杨幂FashionNotes# 【自制封面】@杨幂 &lt;世界时装之苑ELLE China&gt; November 2019“free SPIRIT”「 杨幂——极度坦诚与谨言慎行 」自制封面(一) in GUCCI RESORT 2020GUCCI红裙这张双手抬起来玩弄👏鱼骨辫，眼睛真 ... (186 characters truncated) ... /W 2019黑白大片的封面也要来一张，这张也很美～摄影/ @梅远贵 造型/ @金拍拍JinJing【自制专题】：一本杂志对于封面的选择有很多因素影响，有时最适合做封面的大片没被选上 (这次ELLE真封面选的挺好的)，所有就有了这个专题！【自制封面】：禁拿去控评商用 Just Have Fun！', 'share_image_url': '', 'create_time': '2019-10-14 14:15:21', 'label_id': None,  'dynamicsource_id': 203, 'url': 'https://m.weibo.cn/detail/4426292726816085', 'updata_data': '杨幂｜#杨幂FashionNotes# 【自制封面】@杨幂 &lt;世界时装之苑ELLE China&gt; November 2019“free SPIRIT”「 杨幂——极度坦诚与谨言慎行 」自制封面(一) in GUCCI RESORT 2020GUCCI红裙这张双手抬起来玩弄鱼骨辫，眼睛真 ... (186 characters truncated) ... /W 2019黑白大片的封面也要来一张，这张也很美～摄影/ @梅远贵 造型/ @金拍拍JinJing【自制专题】：一本杂志对于封面的选择有很多因素影响，有时最适合做封面的大片没被选上 (这次ELLE真封面选的挺好的👏)，所有就有了这个专题！【自制封面】：禁拿去控评商用 Just Have Fun！', 'source_id': None}
+lists={'dynamicsource':'新浪音乐','release_time': 15633435433, 'release_state': 0, 'read_amount': 0, 'description': '杨幂FashionNotes\xa0发布了微博', 'correct_state': 0, 'data': '杨幂｜#杨幂FashionNotes# 白敬亭【自制封面】@杨幂 &lt;世界时装之苑ELLE China&gt; November 2019“free SPIRIT”「 杨幂——极度坦诚与谨言慎行 」自制封面(一) in GUCCI RESORT 2020GUCCI红裙这张双手抬起来玩弄👏鱼骨辫，眼睛真 ... (186 characters truncated) ... /W 2019黑白大片的封面也要来一张，这张也很美～摄影/ @梅远贵 造型/ @金拍拍JinJing【自制专题】：一本杂志对于封面的选择有很多因素影响，有时最适合做封面的大片没被选上 (这次ELLE真封面选的挺好的)，所有就有了这个专题！【自制封面】：禁拿去控评商用 Just Have Fun！', 'share_image_url': '', 'create_time': '2019-10-14 14:15:21', 'label_id': None,  'dynamicsource_id': 203, 'url': 'https://m.weibo.cn/detail/4426292726816085', 'updata_data': '杨幂｜#杨幂FashionNotes# 【自制封面】@杨幂 &lt;世界时装之苑ELLE China&gt; November 2019“free SPIRIT”「 杨幂——极度坦诚与谨言慎行 」自制封面(一) in GUCCI RESORT 2020GUCCI红裙这张双手抬起来玩弄鱼骨辫，眼睛真 ... (186 characters truncated) ... /W 2019黑白大片的封面也要来一张，这张也很美～摄影/ @梅远贵 造型/ @金拍拍JinJing【自制专题】：一本杂志对于封面的选择有很多因素影响，有时最适合做封面的大片没被选上 (这次ELLE真封面选的挺好的👏)，所有就有了这个专题！【自制封面】：禁拿去控评商用 Just Have Fun！', 'source_id': None}
 
 class JsonParser():
     def __init__(self,lists):
@@ -28,6 +28,16 @@ class JsonParser():
         dy_model.release_state= 0
         #dy_model.weibo = self.lists.get("weibo")
         dy_model.data = self.lists.get("data")
+        if dy_model.data:
+            label=self.get_label(dy_model.data)
+            if label:
+                dy_model.source_id=json.dumps(label)
+            else:
+
+                dy_model.source_id=None
+            #dy_model.label_id=[11,12]
+        else:
+            dy_model.source_id=None
         dy_model.share_image_url = self.lists.get("share_image_url")
         dy_model.create_time = time.strftime('%Y-%m-%d %H:%M:%S',time.localtime())
         #dy_model.source = self.lists.get("source")
@@ -43,7 +53,6 @@ class JsonParser():
         except:
 
             session.rollback()
-            raise Exception
         if self.lists.get("media_id") and dy_model.id:
             medias=self.lists.get("media_id")
             self.save_media(dy_model,medias)
@@ -52,7 +61,19 @@ class JsonParser():
         except:
 
             session.rollbock()
-            raise Exception
+    #获取label标签
+    def get_label(self,text):
+        if not text:
+            return
+        labels = []
+        res = engine.execute('select nickname, source_id from sourcenickname')
+        for name, star_id in res:
+            if name in text:
+                labels.append(star_id)
+        if labels:
+            return list(set(labels))
+        else:
+            return
 
     #图片视频存库
     def save_media(self,dy_model,medias):
@@ -74,7 +95,7 @@ class JsonParser():
                 except:
 
                     session.rollback()
-                    raise Exception
+
                 md = MediaManyDyanmic()
                 md.media_id = media_model.id
                 md.dynamic_id = dy_model.id
@@ -106,7 +127,7 @@ class JsonParser():
                     except:
 
                         session.rollback()
-                        raise Exception
+
                     md=MediaManyDyanmic()
                     md.media_id=media_model.id
                     md.dynamic_id=dy_model.id
@@ -150,3 +171,14 @@ class JsonParser():
 # value=1 - (hash1 - hash2)/len(hash1.hash)**2
 # print(value)
 
+# def get_label(text):
+#     if not text:
+#         return
+#     labels = []
+#     res = engine.execute('select nickname, source_id from sourcenickname')
+#     for name, star_id in res:
+#         if name in text:
+#             labels.append(star_id)
+#     return list(set(labels))
+# res=get_label('杨幂｜#杨幂FashionNotes# 【自制封面】@杨幂 &lt;世界时装之苑ELLE China&gt; November 2019“free SPIRIT”「 杨幂——极度坦诚与谨言慎行 」自制封面(一) in GUCCI RESORT 2020GUCCI红裙这张双手抬起来玩弄👏鱼骨辫，眼睛真 ... (186 characters truncated) ... /W 2019黑白大片的封面也要来一张，这张也很美～摄影/ @梅远贵 造型/ @金拍拍JinJing【自制专题】：一本杂志对于封面的选择有很多因素影响，有时最适合做封面的大片没被选上 (这次ELLE真封面选的挺好的)，所有就有了这个专题！【自制封面】：禁拿去控评商用 Just Have Fun！')
+# print(res)

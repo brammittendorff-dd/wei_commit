@@ -17,7 +17,7 @@ class Master():
     def weibo_redis(self):
         models = session.query(Dynamicsource).all()
         for model in models:
-            if model.weibo_ID and model.id==203:
+            if model.weibo_ID:
                 weiboid = parse.quote(model.name)
                 weibo_burl = self.CELEBRITY_NEWS_API_URL.format(str(model.weibo_ID), weiboid,
                                                                 str(model.weibo_ID), "107603"+str(model.weibo_ID), "0")

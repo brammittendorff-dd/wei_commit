@@ -17,9 +17,6 @@ class WeiboJiexiPipeline(object):
         }
     def process_item(self, item, spider):
         data=dict(item)
-        print(33333333333)
-        print(data)
-        print(4444444444444444)
         item=self.oss_up(data)
         #lists=[]
         #lists.append(item)
@@ -59,6 +56,9 @@ class WeiboJiexiPipeline(object):
     def get_oss_video_url(self, video_url):
         # if '&' in detail_url:
         #     detail_url = detail_url.split('&')[0]
-        filename = str(time.time()).replace('.', '') + '.mp4'
+        if 'gif' in video_url:
+            filename = str(time.time()).replace('.', '') + '.gif'
+        else:
+            filename = str(time.time()).replace('.', '') + '.mp4'
         res = requests.get(video_url, verify=False).content  # 设置代理
         return upload(res, filename)

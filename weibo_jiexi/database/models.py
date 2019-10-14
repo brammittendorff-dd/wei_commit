@@ -660,17 +660,17 @@ class Dynamic(Base):
     release_time = Column(DATETIME(fsp=6))
     release_state = Column(INTEGER(11))
     read_amount = Column(INTEGER(11))
-    description = Column(VARCHAR(128))
+    description = Column(String(128))
     correct_state = Column(INTEGER(11))
     data = Column(LONGTEXT)
-    share_image_url = Column(VARCHAR(32))
+    share_image_url = Column(String(32))
     create_time = Column(DATETIME(fsp=6))
     label_id = Column(INTEGER(11))
-    dynamicsource = Column(VARCHAR(128), nullable=False)
+    dynamicsource = Column(String(128), nullable=False)
     dynamicsource_id = Column(INTEGER(11))
-    url = Column(VARCHAR(256))
+    url = Column(String(256))
     updata_data = Column(LONGTEXT)
-    source_id = Column(INTEGER(11))
+    source_id = Column(String(128))
 
 
 class Dynamicsource(Base):
@@ -692,8 +692,10 @@ class Event(Base):
     create_time = Column(DATETIME(fsp=6), nullable=False)
     is_updata = Column(TINYINT(1), nullable=False)
     event_picture_url = Column(String(256))
-    source_id = Column(INTEGER(11))
+    source_id = Column(String(255))
     dataytpe_id = Column(INTEGER(11), nullable=False)
+    likeamount = Column(INTEGER(11), nullable=False)
+    unlikeamount = Column(INTEGER(11), nullable=False)
 
 
 class EventGatherManyEvent(Base):
@@ -988,7 +990,6 @@ class Userfloweevent(Base):
     user_id = Column(INTEGER(11), nullable=False)
     is_push = Column(TINYINT(1))
     event_id = Column(INTEGER(11), nullable=False)
-    label = Column(String(128), nullable=False)
     followe_time = Column(String(32), nullable=False)
     last_time = Column(String(32), nullable=False)
 
@@ -1000,7 +1001,6 @@ class Userflowespecial(Base):
     user_id = Column(INTEGER(11), nullable=False)
     is_push = Column(TINYINT(1))
     special_id = Column(INTEGER(11), nullable=False)
-    label = Column(String(128), nullable=False)
     followe_time = Column(String(32), nullable=False)
     last_time = Column(String(32), nullable=False)
 
@@ -1011,10 +1011,9 @@ class Userflowestar(Base):
     id = Column(INTEGER(11), primary_key=True)
     user_id = Column(INTEGER(11), nullable=False)
     is_push = Column(TINYINT(1))
-    special_id = Column(INTEGER(11), nullable=False)
-    label = Column(String(128), nullable=False)
     followe_time = Column(String(32), nullable=False)
     last_time = Column(String(32), nullable=False)
+    source_id = Column(INTEGER(11))
 
 
 class Video(Base):
