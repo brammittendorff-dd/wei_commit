@@ -219,6 +219,7 @@ class WeiboSpider(RedisSpider):
             #item["avatar_url"] = avatar_url
             #os.remove(avatar_url[0].replace("\\", "/"))
             item["weibo"] = 1
+            item["dynamicsource"] = model["model"].name
             item["dynamicsource_id"] = model["model"].id
             # model.mid = mblog.get('mid')
 
@@ -395,9 +396,10 @@ class WeiboSpider(RedisSpider):
         twr_item["share_image_url"] = item.get("share_image_url")
         twr_item["create_time"] = item.get("create_time")
         twr_item["media_id"] = item.get("media_id")
-        twr_item["label_id"] = item.get("label_id")
-        twr_item["other_keyword"] = item.get("other_keyword")
+        #twr_item["label_id"] = item.get("label_id")
+        #twr_item["other_keyword"] = item.get("other_keyword")
         twr_item["source"] = item.get("source")
+        twr_item["dynamicsource"] = item.get("dynamicsource")
         twr_item["star_keyword"] = item.get("star_keyword")
         twr_item["dynamicsource_id"] = item.get("dynamicsource_id")
         twr_item["url"] = item.get("url")

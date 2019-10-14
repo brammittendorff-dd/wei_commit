@@ -9,9 +9,8 @@ import requests
 from PIL import Image
 from io import BytesIO
 import imagehash
-lists={'release_time': 1570502423, 'release_state': None, 'is_repost': None, 'weibo': 1, 'data': '#荷兰弟寸头# 近日，“荷兰弟”汤姆·霍兰德在新片《Cherry》中的造型曝光，他将原先的卷毛剃成了寸头，看起来硬气十足。《Cherry》由罗素兄弟执导，改编自Nico Walker的同名小说，讲述了荷兰弟饰演的男主角因PTSD影响，从一名军医变成抢劫银行的盗贼的故事。荷兰弟新片演军人剃成圆寸头 守望好莱坞的微博视频 ',
-       'share_image_url': '', 'create_time': None, 'media_id': [{'url': 'https://ww3.sinaimg.cn/bmiddle/75b45de6ly1g71foxotjij20p018gwj1.jpg', 'is_video': False}],
-       'label_id': None, 'other_keyword': None, 'source': '新浪娱乐', 'star_keyword': None, 'dynamicsource_id': 1, 'url': 'https://m.weibo.cn/detail/44093sy83s4s55'}
+#lists={'dynamicsource':'新浪音乐','release_time': 15633435433, 'release_state': 0, 'read_amount': 0, 'description': '杨幂FashionNotes\xa0发布了微博', 'correct_state': 0, 'data': '杨幂｜#杨幂FashionNotes# 【自制封面】@杨幂 &lt;世界时装之苑ELLE China&gt; November 2019“free SPIRIT”「 杨幂——极度坦诚与谨言慎行 」自制封面(一) in GUCCI RESORT 2020GUCCI红裙这张双手抬起来玩弄👏鱼骨辫，眼睛真 ... (186 characters truncated) ... /W 2019黑白大片的封面也要来一张，这张也很美～摄影/ @梅远贵 造型/ @金拍拍JinJing【自制专题】：一本杂志对于封面的选择有很多因素影响，有时最适合做封面的大片没被选上 (这次ELLE真封面选的挺好的)，所有就有了这个专题！【自制封面】：禁拿去控评商用 Just Have Fun！', 'share_image_url': '', 'create_time': '2019-10-14 14:15:21', 'label_id': None,  'dynamicsource_id': 203, 'url': 'https://m.weibo.cn/detail/4426292726816085', 'updata_data': '杨幂｜#杨幂FashionNotes# 【自制封面】@杨幂 &lt;世界时装之苑ELLE China&gt; November 2019“free SPIRIT”「 杨幂——极度坦诚与谨言慎行 」自制封面(一) in GUCCI RESORT 2020GUCCI红裙这张双手抬起来玩弄鱼骨辫，眼睛真 ... (186 characters truncated) ... /W 2019黑白大片的封面也要来一张，这张也很美～摄影/ @梅远贵 造型/ @金拍拍JinJing【自制专题】：一本杂志对于封面的选择有很多因素影响，有时最适合做封面的大片没被选上 (这次ELLE真封面选的挺好的👏)，所有就有了这个专题！【自制封面】：禁拿去控评商用 Just Have Fun！', 'source_id': None}
+
 class JsonParser():
     def __init__(self,lists):
         self.lists=lists
@@ -27,11 +26,12 @@ class JsonParser():
         dy_model.url = url
         dy_model.release_time=time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(self.lists.get('release_time')))
         dy_model.release_state= 0
-        dy_model.weibo = self.lists.get("weibo")
+        #dy_model.weibo = self.lists.get("weibo")
         dy_model.data = self.lists.get("data")
         dy_model.share_image_url = self.lists.get("share_image_url")
         dy_model.create_time = time.strftime('%Y-%m-%d %H:%M:%S',time.localtime())
-        dy_model.source = self.lists.get("source")
+        #dy_model.source = self.lists.get("source")
+        dy_model.dynamicsource = self.lists.get("dynamicsource")
         dy_model.dynamicsource_id = self.lists.get("dynamicsource_id")
         dy_model.description=self.lists.get("description")
         dy_model.correct_state=0
@@ -127,9 +127,9 @@ class JsonParser():
         image1 = Image.open(BytesIO(content))
         hash = (phash(image1, highfreq_factor=4))
         return hash
-if __name__=="__main__":
-    js=JsonParser(lists)
-    js.get_dynamic()
+# if __name__=="__main__":
+#     js=JsonParser(lists)
+#     js.get_dynamic()
 
 #itemid=1001030111_0_0_seqid:1856695219|type:1|t:|pos:1-0-0|q:新浪电影|ext:&cate=1&uid=1623886424&qri=0&qtime=1570527248&
 #itemid=1001030111_0_0_seqid:1331644219|type:1|t:|pos:1-0-0|q:新浪体育|ext:&cate=1&uid=1638781994&qri=524288&qtime=1570527568&

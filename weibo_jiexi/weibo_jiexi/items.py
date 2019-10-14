@@ -22,7 +22,7 @@ class WeiboJiexiItem(scrapy.Item):
     create_time = scrapy.Field()
     media_id = scrapy.Field()
     label_id = scrapy.Field()
-    other_keyword = scrapy.Field()
+    dynamicsource = scrapy.Field()
     source = scrapy.Field()
     star_keyword = scrapy.Field()
     dynamicsource_id = scrapy.Field()
