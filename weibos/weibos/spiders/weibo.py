@@ -341,11 +341,13 @@ class WeiboSpider(RedisSpider):
         #     os.mkdir(target_path)
         if 'pics' in mblog:
             for pic_list in mblog['pics']:
+
                 item_model = dict()
                 #result1 = upload_weibo_media( pic_list['url'], target_path)
                 item_model["url"] = pic_list['url']
                 item_model["is_video"] = False
                 if "gif" in item_model["url"]:
+                    item_model["url"]=pic_list["large"]["url"]
                     item_model["is_video"] = True
                 # item_model["pic_width"] = pic_list['geo']['width']
                 # item_model["pic_height"] = pic_list['geo']['height']
