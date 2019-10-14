@@ -16,7 +16,7 @@ class JsonParser():
         self.lists=lists
 
     def get_dynamic(self):
-        if not lists:
+        if not self.lists:
             return
         url = self.lists.get("url")
         all_data=session.query(Dynamic).filter(Dynamic.url==url).all()

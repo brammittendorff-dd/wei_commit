@@ -210,8 +210,8 @@ class WeiboSpider(RedisSpider):
             #self.update(model["model"],item)
             item["description"]=model["model"].name+"发布了微博"
             #item["weibo_id"] = mblog.get('user').get('id')
-            item["source"] = mblog.get('user').get('screen_name')
-            avatar_url = mblog.get('user').get('profile_image_url')
+            #item["source"] = mblog.get('user').get('screen_name')
+            #avatar_url = mblog.get('user').get('profile_image_url')
             # target_path=os.path.join(os.getcwd()+"/weibo",str(model["model"].id))
             # if not os.path.isdir(target_path):
             #     os.mkdir(target_path)
@@ -398,7 +398,7 @@ class WeiboSpider(RedisSpider):
         twr_item["media_id"] = item.get("media_id")
         #twr_item["label_id"] = item.get("label_id")
         #twr_item["other_keyword"] = item.get("other_keyword")
-        twr_item["source"] = item.get("source")
+        #twr_item["source"] = item.get("source")
         twr_item["dynamicsource"] = item.get("dynamicsource")
         twr_item["star_keyword"] = item.get("star_keyword")
         twr_item["dynamicsource_id"] = item.get("dynamicsource_id")

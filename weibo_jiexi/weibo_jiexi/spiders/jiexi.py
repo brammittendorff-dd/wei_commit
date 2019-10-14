@@ -22,7 +22,7 @@ class JiexiSpider(RedisSpider):
     #     model.weibo_additional_id) + '&luicode=10000011&lfid=100103type%3D1%26q%3D' + weiboid + '&type=uid&value=' + str(
     #     model.weibo_additional_id) + '&containerid=' + model.container_id
     custom_settings = {
-        "CONCURRENT_REQUESTS": 1,
+        "CONCURRENT_REQUESTS": 3,
         "DOWNLOAD_DELAY": 1,
     #     'DEFAULT_REQUEST_HEADERS': {
     #         "User-Agent": "Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.132 Safari/537.36"
@@ -78,7 +78,7 @@ class JiexiSpider(RedisSpider):
         item["media_id"] = data.get("media_id")
         #item["label_id"] = data.get("label_id")
         #item["other_keyword"] = data.get("other_keyword")
-        item["source"] = data.get("source")
+        #item["source"] = data.get("source")
         item["dynamicsource"] = item.get("dynamicsource")
         item["star_keyword"] = data.get("star_keyword")
         item["dynamicsource_id"] = data.get("dynamicsource_id")
