@@ -49,6 +49,14 @@ class Article(Base):
     source_id = Column(VARCHAR(128))
 
 
+class ArticleManySource(Base):
+    __tablename__ = 'article_many_source'
+
+    id = Column(INTEGER(11), primary_key=True)
+    source_id = Column(INTEGER(11))
+    article_id = Column(INTEGER(11))
+
+
 class AuthGroup(Base):
     __tablename__ = 'auth_group'
 
@@ -673,6 +681,14 @@ class Dynamic(Base):
     source_id = Column(String(128))
 
 
+class DynamicManySource(Base):
+    __tablename__ = 'dynamic_many_source'
+
+    id = Column(INTEGER(11), primary_key=True)
+    source_id = Column(INTEGER(11))
+    Dynamic_id = Column(INTEGER(11))
+
+
 class Dynamicsource(Base):
     __tablename__ = 'dynamicsource'
 
@@ -692,7 +708,6 @@ class Event(Base):
     create_time = Column(DATETIME(fsp=6), nullable=False)
     is_updata = Column(TINYINT(1), nullable=False)
     event_picture_url = Column(String(256))
-    source_id = Column(String(255))
     dataytpe_id = Column(INTEGER(11), nullable=False)
     likeamount = Column(INTEGER(11), nullable=False)
     unlikeamount = Column(INTEGER(11), nullable=False)
@@ -704,6 +719,14 @@ class EventGatherManyEvent(Base):
     id = Column(INTEGER(11), primary_key=True)
     eventGather_id = Column(INTEGER(11), nullable=False)
     event_id = Column(INTEGER(11), nullable=False)
+
+
+class EventManySource(Base):
+    __tablename__ = 'event_many_source'
+
+    id = Column(INTEGER(11), primary_key=True)
+    source_id = Column(INTEGER(11))
+    Event_id = Column(INTEGER(11))
 
 
 class Eventgather(Base):
@@ -786,7 +809,7 @@ class Module(Base):
     __tablename__ = 'module'
 
     id = Column(INTEGER(11), primary_key=True)
-    module_name = Column(INTEGER(11))
+    module_name = Column(String(256))
 
 
 class Multimediamesource(Base):

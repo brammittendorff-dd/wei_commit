@@ -1,6 +1,6 @@
 #coding=utf-8
 import time
-from database.models import Dynamic,Dynamicsource,Media,MediaManyDyanmic
+from database.models import Dynamic,Dynamicsource,Media,MediaManyDyanmic,DynamicManySource
 from database.db import session,engine
 #from PIL import Image
 import json
@@ -28,16 +28,6 @@ class JsonParser():
         dy_model.release_state= 0
         #dy_model.weibo = self.lists.get("weibo")
         dy_model.data = self.lists.get("data")
-        if dy_model.data:
-            label=self.get_label(dy_model.data)
-            if label:
-                dy_model.source_id=json.dumps(label)
-            else:
-
-                dy_model.source_id=None
-            #dy_model.label_id=[11,12]
-        else:
-            dy_model.source_id=None
         dy_model.share_image_url = self.lists.get("share_image_url")
         dy_model.create_time = time.strftime('%Y-%m-%d %H:%M:%S',time.localtime())
         #dy_model.source = self.lists.get("source")
@@ -53,6 +43,21 @@ class JsonParser():
         except:
 
             session.rollback()
+        #判断data中是否有明星标签
+        if dy_model.data and dy_model.id:
+            labels=self.get_label(dy_model.data)
+            if labels:
+                for label in labels:
+                    #动态标签存库
+                    start_model=DynamicManySource()
+                    start_model.source_id=label
+                    start_model.Dynamic_id=dy_model.id
+                    session.add(start_model)
+            # else:
+            #     dy_model.source_id=None
+            #dy_model.label_id=[11,12]
+        else:
+            dy_model.source_id=None
         if self.lists.get("media_id") and dy_model.id:
             medias=self.lists.get("media_id")
             self.save_media(dy_model,medias)
@@ -108,43 +113,42 @@ class JsonParser():
                 #生成图片哈希值
                 hash_value = self.get_hash(url)
                 #判断图片哈希值相似度
-                media_id=self.parse_hash(hash_value)
+                #media_id=self.parse_hash(hash_value)
                 #存在相似图片
-                if media_id:
-                    md=MediaManyDyanmic()
-                    md.media_id=media_id
-                    md.dynamic_id=dy_model.id
-                    session.add(md)
-                #不存在相似图片
-                else:
-                    media_model = Media()
-                    media_model.hash=str(hash_value)
-                    media_model.url = url
-                    media_model.is_picture = 1
-                    session.add(media_model)
-                    try:
-                        session.flush()
-                    except:
+                # if media_id:
+                #     md=MediaManyDyanmic()
+                #     md.media_id=media_id
+                #     md.dynamic_id=dy_model.id
+                #     session.add(md)
+                # #不存在相似图片
+                # else:
+                media_model = Media()
+                media_model.hash=str(hash_value)
+                media_model.url = url
+                media_model.is_picture = 1
+                session.add(media_model)
+                try:
+                    session.flush()
+                except:
+                    session.rollback()
 
-                        session.rollback()
-
-                    md=MediaManyDyanmic()
-                    md.media_id=media_model.id
-                    md.dynamic_id=dy_model.id
-                    session.add(md)
+                md=MediaManyDyanmic()
+                md.media_id=media_model.id
+                md.dynamic_id=dy_model.id
+                session.add(md)
     #比较hash值
-    def parse_hash(self,hash1):
-        models=session.query(Media).all()
-        for model in models:
-            if model.is_picture==1 and model.hash:
-                hash2=hex_to_hash(model.hash)
-                value = 1 - (hash1 - hash2) / len(hash1.hash) ** 2
-                if value > 0.9:
-                    return model.id
-        return None
+    # def parse_hash(self,hash1):
+    #     models=session.query(Media).all()
+    #     for model in models:
+    #         if model.is_picture==1 and model.hash:
+    #             hash2=hex_to_hash(model.hash)
+    #             value = 1 - (hash1 - hash2) / len(hash1.hash) ** 2
+    #             if value > 0.9:
+    #                 return model.id
+    #     return None
     #获取hash值
     def get_hash(self,url):
-        content=requests.get(url).content
+        content=requests.get(url,verify=False).content
         image1 = Image.open(BytesIO(content))
         hash = (phash(image1, highfreq_factor=4))
         return hash
