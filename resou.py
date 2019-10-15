@@ -112,3 +112,6 @@ class HH():
 # res=requests.get("https://wx1.sinaimg.cn/large/61e7f4aaly1g7x05zfr2eg20ef07zqv7.gif",verify = False).content
 # with open("1.gif","wb") as f:
 #     f.write(res)
+# video_url="http://f.video.weibocdn.com/0029cj4Elx07xO0H1Tv2010412065UgP0E030.mp4?label=mp4_720p&template=1280x720.25.0&trans_finger=1f0da16358befad33323e3a1b7f95fc9&Expires=&ssig=DuZ5CBMadO&KID=unistore,video"
+# res = requests.get(video_url, verify=False).content
+# print(len(res))

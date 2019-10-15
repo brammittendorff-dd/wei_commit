@@ -18,9 +18,10 @@ class WeiboJiexiPipeline(object):
     def process_item(self, item, spider):
         data=dict(item)
         item=self.oss_up(data)
+        if item:
         #lists=[]
         #lists.append(item)
-        weibo_json_parse.JsonParser(item).get_dynamic()
+            weibo_json_parse.JsonParser(item).get_dynamic()
         return item
     def oss_up(self,data):
         # avatar_url=data.get("avatar_url")
@@ -30,7 +31,11 @@ class WeiboJiexiPipeline(object):
         if media_id:
             for index,i in enumerate(media_id):
                 if i["is_video"]:
-                    data["media_id"][index]["url"]=self.get_oss_video_url(i["url"])
+                    url=self.get_oss_video_url(i["url"])
+                    res = requests.get(url, verify=False).content
+                    if len(res)<5000:
+                        return
+                    data["media_id"][index]["url"]=url
                 else:
                     data["media_id"][index]["url"]=self.get_oss_img_url(i["url"])
         # retweeted_status=data.get("retweeted_status")
@@ -61,4 +66,5 @@ class WeiboJiexiPipeline(object):
         else:
             filename = str(time.time()).replace('.', '') + '.mp4'
         res = requests.get(video_url, verify=False).content  # 设置代理
+
         return upload(res, filename)
