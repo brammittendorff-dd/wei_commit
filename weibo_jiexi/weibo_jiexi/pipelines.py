@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import sys
+import random
 sys.path.append('/home/commit/wei_commit/weibo_jiexi')
 # Define your item pipelines here
 #
@@ -52,7 +53,7 @@ class WeiboJiexiPipeline(object):
         #                 data["retweeted_status"]["media_id"][index]["url"]=self.get_oss_img_url(i["url"])
         return data
     def get_oss_img_url(self, url):
-        filename = str(time.time()).replace('.', '') + '.jpg'
+        filename = str(time.time()).replace('.', '') + str(random.randint(1,100000))+'.jpg'
         # path = re.sub('[?=&%]', '', filename)
         res = requests.get(url=url, verify=False).content  # 设置代理
         return upload(res, filename)
@@ -62,9 +63,9 @@ class WeiboJiexiPipeline(object):
         # if '&' in detail_url:
         #     detail_url = detail_url.split('&')[0]
         if 'gif' in video_url:
-            filename = str(time.time()).replace('.', '') + '.gif'
+            filename = str(time.time()).replace('.', '') + str(random.randint(1,100000))+'.gif'
         else:
-            filename = str(time.time()).replace('.', '') + '.mp4'
+            filename = str(time.time()).replace('.', '') + str(random.randint(1,100000))+'.mp4'
         res = requests.get(video_url, verify=False).content  # 设置代理
 
         return upload(res, filename)

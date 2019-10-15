@@ -1,6 +1,6 @@
 #coding=utf-8
 import time
-from database.models import Dynamic,Dynamicsource,Media,MediaManyDyanmic,DynamicManySource
+from database.models import Dynamic,Dynamicsource,Media,MediaManyDyanmic,DynamicManySource,Dataorigin
 from database.db import session,engine
 #from PIL import Image
 import json
@@ -44,6 +44,10 @@ class JsonParser():
 
             session.rollback()
         #判断data中是否有明星标签
+        if dy_model.id:
+            dor=Dataorigin()
+            dor.dynamic_id=dy_model.id
+            session.add(dor)
         if dy_model.data and dy_model.id:
             labels=self.get_label(dy_model.data)
             if labels:
