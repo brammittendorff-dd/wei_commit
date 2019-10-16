@@ -31,7 +31,7 @@ class WeiboSpider(RedisSpider):
     #     model.weibo_additional_id) + '&containerid=' + model.container_id
     custom_settings = {
         "CONCURRENT_REQUESTS": 1,
-        "DOWNLOAD_DELAY": 2,
+        "DOWNLOAD_DELAY": 3,
         'DEFAULT_REQUEST_HEADERS': {
             "User-Agent": "Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.132 Safari/537.36"
         },
@@ -79,7 +79,7 @@ class WeiboSpider(RedisSpider):
 
     def parse(self, response):
 
-        print(response.meta)
+        #print(response.meta)
         meta = response.meta
         #匹配containerid
         #https://m.weibo.cn/api/container/getIndex?uid=1642591402&luicode=10000011&lfid=100103type%3D1%26q%3D%E6%96%B0%E6%B5%AA%E5%A8%B1%E4%B9%90&type=uid&value=1642591402&containerid=1076031642591402&page=
@@ -137,6 +137,9 @@ class WeiboSpider(RedisSpider):
                             return
                         #print(item)
                         yield item
+        else:
+            print("请休息一下。。")
+            time.sleep(60)
         print(onepage)
         try:
             #print(res['data']['cardlistInfo'])
@@ -147,6 +150,7 @@ class WeiboSpider(RedisSpider):
                 #meta = {"model": model}
                 url = self.CELEBRITY_NEWS_API_URL.format(str(model.weibo_ID), weiboid,
                                                          str(model.weibo_ID), "107603"+str(model.weibo_ID), str(page))
+                time.sleep(3)
                 yield scrapy.Request(url=url, meta=meta, headers=self.headers,callback=self.parse,dont_filter=True
                                      )
         except:
@@ -249,6 +253,7 @@ class WeiboSpider(RedisSpider):
         #burl = "https://m.weibo.cn/status/{}".format(mblog.get('mid'))
         burl = "https://m.weibo.cn/detail/{}".format(mblog.get('mid'))
             #yield scrapy.Request(url=burl,callback=self.m_time)
+        time.sleep(2)
         try:
             res = self.s.get(burl).text
             time.sleep(1)
