@@ -108,13 +108,14 @@ class WeiboSpider(RedisSpider):
             if res['ok'] == 1:
                 cards = res['data']['cards']
             else:
+                print(res)
                 return
             for card in cards:
                 if card['card_type'] == 9:
                     mblog = card.get('mblog')
                     if not mblog:
                         return
-                    print(mblog)
+
                     if 'retweeted_status' in mblog:
                         continue
                         # print(2222222222222222)
@@ -425,7 +426,6 @@ class WeiboSpider(RedisSpider):
 
         cook = self.getcookies()
         username = cook.username
-        print(username)
         password = cook.password
         # self.star = star
         # self.target_path = os.path.join(os.getcwd(), str(3))
