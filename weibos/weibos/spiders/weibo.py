@@ -103,41 +103,40 @@ class WeiboSpider(RedisSpider):
                     meta["urls"] = []
         meta["model"]=model
         #meta["type"] = json.dumps(["hanyu"])
-        res=json.loads(response.text)
-        #print(res)
-        if res['ok'] == 1:
-            cards = res['data']['cards']
-        else:
-            return
-
-        for card in cards:
-            if card['card_type'] == 9:
-                mblog = card.get('mblog')
-                if not mblog:
-                    return
-                print(mblog)
-                if 'retweeted_status' in mblog:
-                    continue
-                    # print(2222222222222222)
-                    # item=self.parse_retweet(mblog, meta)
-                    # if not item:
-                    #     continue
-                    # if item==100:
-                    #     return
-                    # item=self.to_item(item)
-                    # #print(item)
-                    # yield item
-                else:
-                    item = self.parse_status(mblog, meta)
-                    if item == 100:
+        if response.text:
+            res=json.loads(response.text)
+            if res['ok'] == 1:
+                cards = res['data']['cards']
+            else:
+                return
+            for card in cards:
+                if card['card_type'] == 9:
+                    mblog = card.get('mblog')
+                    if not mblog:
                         return
-                    if not item:
+                    print(mblog)
+                    if 'retweeted_status' in mblog:
                         continue
-                    item=self.to_item(item)
-                    if item==100:
-                        return
-                    #print(item)
-                    yield item
+                        # print(2222222222222222)
+                        # item=self.parse_retweet(mblog, meta)
+                        # if not item:
+                        #     continue
+                        # if item==100:
+                        #     return
+                        # item=self.to_item(item)
+                        # #print(item)
+                        # yield item
+                    else:
+                        item = self.parse_status(mblog, meta)
+                        if item == 100:
+                            return
+                        if not item:
+                            continue
+                        item=self.to_item(item)
+                        if item==100:
+                            return
+                        #print(item)
+                        yield item
         print(onepage)
         try:
             #print(res['data']['cardlistInfo'])
