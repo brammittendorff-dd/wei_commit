@@ -258,7 +258,7 @@ class WeiboSpider(RedisSpider):
             #yield scrapy.Request(url=burl,callback=self.m_time)
         time.sleep(2)
         try:
-            res = self.s.get(burl).text
+            res = self.s.get(burl,timeout=15).text
             time.sleep(1)
             if "微博内打开" in res:
                 return 500
@@ -302,7 +302,7 @@ class WeiboSpider(RedisSpider):
 
 
                 #yield scrapy.Request(url=burl,callback=self.m_time)
-            res = self.s.get(burl).text
+            res = self.s.get(burl,timeout=15).text
             try:
 
                 time.sleep(1)

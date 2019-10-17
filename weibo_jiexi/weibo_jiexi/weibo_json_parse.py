@@ -101,6 +101,7 @@ class JsonParser():
                     continue
                 media_model.url = media.get("url")
                 media_model.hash = None
+                media_model.create_time = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())
                 session.add(media_model)
                 try:
                     session.flush()
@@ -133,6 +134,7 @@ class JsonParser():
                 media_model.hash=str(hash_value)
                 media_model.url = url
                 media_model.is_picture = 1
+                media_model.create_time = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())
                 session.add(media_model)
                 try:
                     session.flush()

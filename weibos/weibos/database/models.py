@@ -1,5 +1,5 @@
 # coding: utf-8
-from sqlalchemy import Column, DateTime, Index, String, Text
+from sqlalchemy import Column, DateTime, Index, String, Text, text
 from sqlalchemy.dialects.mysql import DATETIME, INTEGER, LONGTEXT, SMALLINT, TINYINT, VARCHAR
 from sqlalchemy.ext.declarative import declarative_base
 
@@ -623,7 +623,7 @@ class Dataorigin(Base):
     article_id = Column(INTEGER(11))
     dynamic_id = Column(INTEGER(11))
     label_id = Column(INTEGER(11))
-    is_create = Column(TINYINT(1))
+    is_create = Column(TINYINT(1), server_default=text("'0'"))
 
 
 class Datatype(Base):
@@ -779,7 +779,6 @@ class Event(Base):
     id = Column(INTEGER(11), primary_key=True)
     event_title = Column(String(32))
     event_lable = Column(INTEGER(11))
-    event_time = Column(DATETIME(fsp=6))
     event_introduction = Column(LONGTEXT)
     create_time = Column(DATETIME(fsp=6), nullable=False)
     is_updata = Column(TINYINT(1), nullable=False)
@@ -788,6 +787,7 @@ class Event(Base):
     likeamount = Column(INTEGER(11), nullable=False)
     unlikeamount = Column(INTEGER(11), nullable=False)
     is_show = Column(TINYINT(1), nullable=False)
+    update_time = Column(DATETIME(fsp=6), nullable=False)
 
 
 class EventGatherManyEvent(Base):
@@ -811,8 +811,8 @@ class Eventgather(Base):
 
     id = Column(INTEGER(11), primary_key=True)
     is_updata = Column(TINYINT(1), nullable=False)
-    creat_time = Column(DATETIME(fsp=6))
-    label_id = Column(INTEGER(11), nullable=False)
+    creat_time = Column(DATETIME(fsp=6), nullable=False)
+    label_id = Column(INTEGER(11))
     introduction = Column(LONGTEXT)
     name = Column(String(128))
     picture1 = Column(String(128))
@@ -872,6 +872,7 @@ class Media(Base):
     is_picture = Column(TINYINT(1), nullable=False)
     url = Column(String(256))
     hash = Column(String(256))
+    create_time = Column(DATETIME(fsp=6))
 
 
 class MediaManyDyanmic(Base):
@@ -905,9 +906,8 @@ class Onebox(Base):
     id = Column(INTEGER(11), primary_key=True)
     event_id = Column(INTEGER(11), nullable=False)
     label = Column(INTEGER(11))
-    describe = Column(String(256))
-    onebox_picture = Column(String(128))
-    onebox_time = Column(DATETIME(fsp=6), nullable=False)
+    onebox_name1 = Column(String(256))
+    onebox_name2 = Column(String(256))
 
 
 class OneboxMamyDataorigin(Base):
@@ -1010,8 +1010,8 @@ class Special(Base):
     __tablename__ = 'special'
 
     id = Column(INTEGER(11), primary_key=True)
-    label_id = Column(INTEGER(11), nullable=False)
-    index = Column(INTEGER(11), nullable=False)
+    label_id = Column(INTEGER(11))
+    index = Column(INTEGER(11))
     name = Column(String(128))
     introduction = Column(LONGTEXT)
     picture1 = Column(String(128))
