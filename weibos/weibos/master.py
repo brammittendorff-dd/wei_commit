@@ -17,17 +17,27 @@ class Master():
     def weibo_redis(self):
         models = session.query(Dynamicsource).all()
         for model in models:
-            if model.weibo_ID and model.id>1:
+            if model.weibo_ID and model.id ==19:
                 weiboid = parse.quote(model.name)
                 weibo_burl = self.CELEBRITY_NEWS_API_URL.format(str(model.weibo_ID), weiboid,
                                                                 str(model.weibo_ID), "107603"+str(model.weibo_ID), "0")
-                self.r.rpush("weibo:start_urls", weibo_burl)
+                print(weibo_burl)
+                #self.r.rpush("weibo:start_urls", weibo_burl)
+    def weibo_new_redis(self):
+        models = session.query(Dynamicsource).all()
+        for model in models:
+            if model.weibo_ID:
+                weiboid = parse.quote(model.name)
+                weibo_burl = self.CELEBRITY_NEWS_API_URL.format(str(model.weibo_ID), weiboid,
+                                                                str(model.weibo_ID), "107603"+str(model.weibo_ID), "0")
+                #print(weibo_burl)
+                self.r.rpush("weibo_new:start_urls", weibo_burl)
 
-    def weibo_test_redis(self):
-
-        weiboid = parse.quote("杨幂")
-        weibo_burl = self.CELEBRITY_NEWS_API_URL.format(str(1195242865), weiboid,str(1195242865), "1076031195242865", "")
-        self.r.rpush("weibo:start_urls", weibo_burl)
+    # def weibo_test_redis(self):
+    #
+    #     weiboid = parse.quote("杨幂")
+    #     weibo_burl = self.CELEBRITY_NEWS_API_URL.format(str(1195242865), weiboid,str(1195242865), "1076031195242865", "")
+    #     self.r.rpush("weibo:start_urls", weibo_burl)
     def readxls(self):
         import openpyxl
 
@@ -59,7 +69,8 @@ class Master():
                 raise Exception
 ms = Master()
 #ms.readxls()
-ms.weibo_redis()
+#ms.weibo_redis()
+ms.weibo_new_redis()
 #ms.weibo_test_redis()
 
 

@@ -10,23 +10,22 @@ engine = create_engine('mysql+pymysql://root:mysql@47.110.76.95/'
 
 DBSession = sessionmaker(bind=engine)
 session = scoped_session(DBSession)
-
-# from database.models import Dynamic,DynamicManySource
+#
+# from database.models import Dynamic,DynamicManySource,Dataorigin
 # import json
 # models=session.query(Dynamic).all()
 # for model in models:
-#     if model.source_id:
-#         sources=json.loads(model.source_id)
-#         for i in sources:
 #
-#             dy=DynamicManySource()
-#             dy.source_id=i
-#             dy.Dynamic_id=model.id
-#             session.add(dy)
-#             try:
-#                 session.commit()
-#                 print(111111)
-#             except:
-#                 session.rollback()
-#                 raise Exception
+#
+#
+#     dy=Dataorigin()
+#     print(model.id)
+#     dy.dynamic_id=model.id
+#     session.add(dy)
+#     try:
+#         session.commit()
+#         print(111111)
+#     except:
+#         session.rollback()
+#         raise Exception
 
