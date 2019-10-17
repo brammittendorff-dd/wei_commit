@@ -155,7 +155,8 @@ class WeiboSpider(RedisSpider):
             yield scrapy.Request(url=url, meta=meta, headers=self.headers,callback=self.parse,dont_filter=True
                                  )
             print("已请求完成"+str(page)+"页")
-        except:
+        except Exception as e:
+            print(e)
             print("数据已抓取完")
             session.rollback()
             return
