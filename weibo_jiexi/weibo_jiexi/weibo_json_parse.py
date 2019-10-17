@@ -36,6 +36,7 @@ class JsonParser():
         dy_model.description=self.lists.get("description")
         dy_model.correct_state=0
         dy_model.read_amount=0
+
         dy_model.updata_data=dy_model.data
         session.add(dy_model)
         try:
@@ -43,11 +44,13 @@ class JsonParser():
         except:
 
             session.rollback()
-        #判断data中是否有明星标签
+        #将动态信息存入dataorigin
         if dy_model.id:
             dor=Dataorigin()
             dor.dynamic_id=dy_model.id
+            dor.is_create = 0
             session.add(dor)
+        # 判断data中是否有明星标签
         if dy_model.data and dy_model.id:
             labels=self.get_label(dy_model.data)
             if labels:

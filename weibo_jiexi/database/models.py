@@ -1,5 +1,5 @@
 # coding: utf-8
-from sqlalchemy import Column, DateTime, Index, String, Text
+from sqlalchemy import Column, DateTime, Index, String, Text, text
 from sqlalchemy.dialects.mysql import DATETIME, INTEGER, LONGTEXT, SMALLINT, TINYINT, VARCHAR
 from sqlalchemy.ext.declarative import declarative_base
 
@@ -42,11 +42,10 @@ class Article(Base):
     release_time = Column(DATETIME(fsp=6), nullable=False)
     release_state = Column(INTEGER(11), nullable=False)
     read_amount = Column(INTEGER(11), nullable=False)
-    article_data = Column(LONGTEXT)
+    data = Column(LONGTEXT)
     share_image_url = Column(VARCHAR(32))
     source = Column(VARCHAR(128))
     url = Column(VARCHAR(128))
-    source_id = Column(VARCHAR(128))
 
 
 class ArticleManySource(Base):
@@ -73,7 +72,7 @@ class AuthUser(Base):
     is_superuser = Column(TINYINT(1), nullable=False)
     username = Column(String(150), nullable=False, unique=True)
     first_name = Column(String(30), nullable=False)
-    last_name = Column(String(30), nullable=False)
+    last_name = Column(String(150), nullable=False)
     email = Column(String(254), nullable=False)
     is_staff = Column(TINYINT(1), nullable=False)
     is_active = Column(TINYINT(1), nullable=False)
@@ -624,6 +623,7 @@ class Dataorigin(Base):
     article_id = Column(INTEGER(11))
     dynamic_id = Column(INTEGER(11))
     label_id = Column(INTEGER(11))
+    is_create = Column(TINYINT(1), server_default=text("'0'"))
 
 
 class Datatype(Base):
@@ -659,6 +659,82 @@ class DjangoSession(Base):
     session_key = Column(String(40), primary_key=True)
     session_data = Column(LONGTEXT, nullable=False)
     expire_date = Column(DATETIME(fsp=6), nullable=False, index=True)
+
+
+class DoubanChannel(Base):
+    __tablename__ = 'douban_channel'
+
+    id = Column(INTEGER(16), primary_key=True, comment='主键')
+    baike_entry = Column(String(255), comment='百科词条')
+    baike_id = Column(INTEGER(18), comment='百科id')
+    baike_birthday = Column(String(255), comment='百科生日')
+    baike_type = Column(INTEGER(255), comment='百科类型')
+    douban_movie_id = Column(INTEGER(16), comment='豆瓣作品id')
+
+
+class DoubanStar(Base):
+    __tablename__ = 'douban_star'
+
+    id = Column(INTEGER(18), primary_key=True, comment='豆瓣明星表id')
+    douban_channel_id = Column(INTEGER(18), comment='渠道表id')
+    douban_movie_star_id = Column(INTEGER(18), comment='豆瓣明星id')
+    star_name = Column(Text, comment='明星名字')
+    gender = Column(String(255), comment='性别')
+    constellation = Column(String(255), comment='星座')
+    birthday = Column(String(255), comment='生日')
+    birthplace = Column(Text, comment='出生地')
+    profession = Column(Text, comment='职业')
+    family_member = Column(Text, comment='家庭成员')
+    imdb = Column(Text, comment='imdb编号')
+    official_site = Column(Text, comment='官方网站')
+    more_china_name = Column(Text, comment='更多中文名')
+    more_english_name = Column(Text, comment='更多外文名')
+    star_intro = Column(Text, comment='明星简介')
+    star_fans_num = Column(String(255), comment='影迷数')
+    star_head_image = Column(Text, comment='头像')
+
+
+class DoubanStarWork(Base):
+    __tablename__ = 'douban_star_works'
+
+    id = Column(INTEGER(18), primary_key=True, comment='主键')
+    douban_star_id = Column(INTEGER(18), comment='豆瓣明星id')
+    douban_works_id = Column(INTEGER(18), comment='豆瓣作品id')
+    works_post = Column(String(255), comment='作品职位')
+    works_role = Column(Text, comment='扮演角色')
+    star_name = Column(String(255), comment='职员名字')
+    works_name = Column(Text, comment='作品名字')
+
+
+class DoubanWork(Base):
+    __tablename__ = 'douban_works'
+
+    id = Column(INTEGER(18), primary_key=True, comment='主键id')
+    douban_works_id = Column(INTEGER(18), comment='豆瓣作品id')
+    douban_works_name = Column(Text, comment='豆瓣作品名')
+    head_image_url = Column(Text, comment='豆瓣作品海报')
+    old_name = Column(Text, comment='原名')
+    alternate_name = Column(Text, comment='又名')
+    director = Column(Text, comment='导演')
+    writer = Column(Text, comment='编剧')
+    act = Column(Text, comment='主演')
+    works_type = Column(Text, comment='类型')
+    flaking_acre = Column(Text, comment='制片国家地区')
+    year_time = Column(Text, comment='年代')
+    language = Column(Text, comment='语言')
+    show_time = Column(Text, comment='上映时间')
+    mins = Column(String(255), comment='片长')
+    imdb = Column(String(255), comment='IMDb链接')
+    official_site = Column(String(255), comment='官方网站')
+    douban_way = Column(String(255), comment='豆瓣小站')
+    debut = Column(String(255), comment='首播')
+    TV_number = Column(String(255), comment='集数')
+    one_mins = Column(String(255), comment='单集片长')
+    grade = Column(String(255), comment='评分')
+    grade_number = Column(String(255), comment='评分人数')
+    works_intor = Column(LONGTEXT, comment='作品简介')
+    often_label = Column(Text, comment='常用标签')
+    short_evaluate_num = Column(String(255), comment='短评数')
 
 
 class Dynamic(Base):
@@ -711,6 +787,7 @@ class Event(Base):
     dataytpe_id = Column(INTEGER(11), nullable=False)
     likeamount = Column(INTEGER(11), nullable=False)
     unlikeamount = Column(INTEGER(11), nullable=False)
+    is_show = Column(TINYINT(1), nullable=False)
 
 
 class EventGatherManyEvent(Base):
@@ -958,15 +1035,13 @@ class Timeline(Base):
     __tablename__ = 'timeline'
 
     id = Column(INTEGER(11), primary_key=True)
-    title = Column(LONGTEXT)
+    title = Column(LONGTEXT, nullable=False)
     preface = Column(LONGTEXT)
     epilogue = Column(LONGTEXT)
     label_id = Column(INTEGER(11))
     event_id = Column(INTEGER(11))
     is_active = Column(TINYINT(1), nullable=False)
     create_time = Column(DATETIME(fsp=6), nullable=False)
-    other_keyword = Column(String(128))
-    star_keyword = Column(String(128))
 
 
 class TimelineMamyDataorigin(Base):
