@@ -108,6 +108,7 @@ class WeiboSpider(RedisSpider):
             if res['ok'] == 1:
                 cards = res['data']['cards']
             else:
+                print("已经没有数据了。。。")
                 print(res)
                 return
             for card in cards:
@@ -146,14 +147,14 @@ class WeiboSpider(RedisSpider):
             #print(res['data']['cardlistInfo'])
             #page = res['data']['cardlistInfo']['page']
             page = int(onepage)+1
-            if page:
-                weiboid = parse.quote(model.name)
-                #meta = {"model": model}
-                url = self.CELEBRITY_NEWS_API_URL.format(str(model.weibo_ID), weiboid,
-                                                         str(model.weibo_ID), "107603"+str(model.weibo_ID), str(page))
-                time.sleep(3)
-                yield scrapy.Request(url=url, meta=meta, headers=self.headers,callback=self.parse,dont_filter=True
-                                     )
+            weiboid = parse.quote(model.name)
+            #meta = {"model": model}
+            url = self.CELEBRITY_NEWS_API_URL.format(str(model.weibo_ID), weiboid,
+                                                     str(model.weibo_ID), "107603"+str(model.weibo_ID), str(page))
+            time.sleep(3)
+            yield scrapy.Request(url=url, meta=meta, headers=self.headers,callback=self.parse,dont_filter=True
+                                 )
+            print("已请求完成"+str(page)+"页")
         except:
             print("数据已抓取完")
             session.rollback()
