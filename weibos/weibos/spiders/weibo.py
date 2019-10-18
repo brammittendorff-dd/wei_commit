@@ -243,6 +243,8 @@ class WeiboSpider(RedisSpider):
             return
     def parse_ip(self):
         res=requests.get("http://webapi.http.zhimacangku.com/getip?num=1&type=2&pro=0&city=0&yys=0&port=11&pack=67493&ts=0&ys=0&cs=0&lb=1&sb=0&pb=45&mr=1&regions=")
+        if res.json()["success"] == False:
+            return
         data=res.json()["data"][0]
         ip=data["ip"]
         port=data["port"]
@@ -273,8 +275,13 @@ class WeiboSpider(RedisSpider):
             print("ssssssssssssssss"+burl)
             try:
                 time.sleep(1)
-                self.s.proxies = self.parse_ip()
-                res = self.s.get(burl).text
+                proxies=self.parse_ip()
+                if not proxies:
+                    print("ip请求失败")
+                    self.s.proxies=None
+                    return 500
+                self.s.proxies = proxies
+                res = self.s.get(burl,timeout=5).text
                 if "微博内打开" in res:
                     return 500
                 created_at = re.search('"created_at": "(.*?)"', res).group(1)
@@ -316,8 +323,13 @@ class WeiboSpider(RedisSpider):
                 print("ssssssssssssssss"+burl)
                 try:
                     time.sleep(1)
-                    self.s.proxies = self.parse_ip()
-                    res = self.s.get(burl).text
+                    proxies = self.parse_ip()
+                    if not proxies:
+                        print("ip请求失败")
+                        self.s.proxies = None
+                        return 500
+                    self.s.proxies = proxies
+                    res = self.s.get(burl,timeout=5).text
                     if "微博内打开" in res:
                         return 500
                     created_at = re.search('"created_at": "(.*?)"', res).group(1)
