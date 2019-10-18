@@ -249,8 +249,8 @@ class WeiboSpider(RedisSpider):
         ip=data["ip"]
         port=data["port"]
         proxies = {
-            "http": "http://"+str(ip)+":"+str(port),
-            "https": "https://"+str(ip)+":"+str(port),
+            #"http": "http://"+str(ip)+":"+str(port),
+            "https": "https://"+str(ip)+":"+str(port)
         }
         return proxies
     #未显示全文
@@ -275,7 +275,8 @@ class WeiboSpider(RedisSpider):
             print("ssssssssssssssss"+burl)
             try:
                 time.sleep(1)
-                proxies=self.parse_ip()
+                proxies=self.get_redis_ip()
+                #proxies=self.parse_ip()
                 if not proxies:
                     print("ip请求失败")
                     self.s.proxies=None
@@ -291,10 +292,19 @@ class WeiboSpider(RedisSpider):
                 # print(int(time.mktime(date.timetuple())))
                 return int(time.mktime(date.timetuple())),str_first
             except:
-                print("ssssssssssssssss" + burl)
-                created_at=int(time.time())
+                print("我也请求ip了。。。。")
+                self.s.proxies=self.parse_ip()
+                #print("ssssssssssssssss" + burl)
+                #created_at=int(time.time())
                 return 500
-
+    def get_redis_ip(self):
+        proxy = self.r.srandmember("douban_proxy")
+        if proxy:
+            proxy = proxy.decode()
+            proxies = {"https": proxy}
+            return proxies
+        else:
+            return
     #以显示全文
     def generate_timestamp(self, mblog):
         #burl = "https://m.weibo.cn/status/{}".format(mblog.get('mid'))
@@ -323,7 +333,8 @@ class WeiboSpider(RedisSpider):
                 print("ssssssssssssssss"+burl)
                 try:
                     time.sleep(1)
-                    proxies = self.parse_ip()
+                    proxies = self.get_redis_ip()
+                    #proxies = self.parse_ip()
                     if not proxies:
                         print("ip请求失败")
                         self.s.proxies = None
@@ -337,8 +348,8 @@ class WeiboSpider(RedisSpider):
                     # print(int(time.mktime(date.timetuple())))
                     return int(time.mktime(date.timetuple()))
                 except:
-                    print("ssssssssssssssss" + burl)
-                    created_at=int(time.time())
+                    print("我也请求ip了。。。。")
+                    self.s.proxies = self.parse_ip()
                     return 500
         # print(created_at)
         if len(created_at.split(' ')) > 5:
